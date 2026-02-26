@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/ui/button.tsx","./src/hooks/useauth.ts","./src/hooks/usepois.ts","./src/hooks/useprofile.ts","./src/lib/supabase.ts","./src/lib/utils.ts","./src/pages/authpage.tsx","./src/pages/createprofilepage.tsx","./src/pages/homepage.tsx","./src/types/database.ts"],"version":"5.9.3"}
