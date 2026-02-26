@@ -1,5 +1,4 @@
 import { createContext, useContext, useRef, useState, ReactNode } from 'react'
-import mapboxgl from 'mapbox-gl'
 import type { Map as MapboxMap, Marker as MapboxMarker } from 'mapbox-gl'
 
 interface MapState {

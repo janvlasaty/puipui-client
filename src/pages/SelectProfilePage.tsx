@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
-import { Button } from '@/components/ui/button'
 import type { Profile } from '../hooks/useProfile'
 
 export const SelectProfilePage = () => {

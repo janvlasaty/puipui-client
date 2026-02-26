@@ -87,7 +87,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     }
   }
 
-  const selectProfile = (profileId: string) => {
+  const selectProfile = (_profileId: string) => {
     // This should be called after the profile is already loaded
     // The profile context will already have the selected profile via fetchProfile
     // This is a placeholder for any additional logic needed on selection

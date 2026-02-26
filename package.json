@@ -10,6 +10,7 @@
     "generate:types": "supabase gen types typescript --linked > src/types/database.ts"
   },
   "dependencies": {
+    "@mapbox/point-geometry": "^1.1.0",
     "@supabase/auth-ui-react": "^0.4.6",
     "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.38.0",
@@ -18,7 +19,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
-    "mapbox-gl": "^3.19.0",
+    "mapbox-gl": "^3.0.0",
     "radix-ui": "^1.4.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

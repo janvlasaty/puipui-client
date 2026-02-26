@@ -8,7 +8,7 @@ interface ChatListPageProps {
 }
 
 export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) => {
-  const { session } = useAuth()
+  const { session: _session } = useAuth()
 
   const friends: Friend[] = [
     {

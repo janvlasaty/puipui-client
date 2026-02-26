@@ -7,8 +7,8 @@ import { InterestsPage } from './InterestsPage'
 import { BottomNavigation } from '../components/BottomNavigation'
 
 export const HomePage = () => {
-  const { session } = useAuth()
-  const { profile } = useProfile()
+  const { session: _session } = useAuth()
+  const { profile: _profile } = useProfile()
   const [activeTab, setActiveTab] = useState<'chat' | 'map' | 'interests'>('map')
   const [isInDirectChat, setIsInDirectChat] = useState(false)
 

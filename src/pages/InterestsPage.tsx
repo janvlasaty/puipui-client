@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '../lib/supabase'
 
 export const InterestsPage = () => {
-  const { session } = useAuth()
+  const { session: _session } = useAuth()
   const { profile } = useProfile()
 
   const handleSignOut = async () => {

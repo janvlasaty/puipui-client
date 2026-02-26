@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { ChatConversation } from '../components/ChatConversation'
-import { supabase } from '../lib/supabase'
 
 interface Message {
   id: string
