@@ -29,17 +29,15 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({
   const [conversationMessages, setConversationMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!roomId || !session?.user?.id) return
-    fetchMessages()
-  }, [roomId, session?.user?.id])
-
   const fetchMessages = async () => {
+    if (!roomId || !session?.user?.id) {
+      console.log('Skipping fetch: roomId or session?.user?.id missing', { roomId, userId: session?.user?.id })
+      return
+    }
+
     try {
       setLoading(true)
       console.log('=== FETCHING MESSAGES ===')
-      console.log('Session:', session)
-      console.log('Session user:', session?.user)
       console.log('Current user ID:', session?.user?.id)
       
       const { data: messages, error } = await supabase
@@ -54,8 +52,8 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({
 
       // Convert database messages to Message format
       const formattedMessages: Message[] = (messages || []).map((msg: any) => {
-        const isSender = msg.user_id === session?.user?.id
-        console.log(`Message "${msg.content}": user_id="${msg.user_id}" vs session.user.id="${session?.user?.id}" -> isSender=${isSender}`)
+        const isSender = msg.user_id === session.user.id
+        console.log(`Message "${msg.content}": user_id="${msg.user_id}" vs session.user.id="${session.user.id}" -> isSender=${isSender}`)
         
         return {
           id: msg.id,
@@ -78,6 +76,10 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    fetchMessages()
+  }, [roomId, session?.user?.id])
 
   const handleSendMessage = async (message: string) => {
     if (!session?.user?.id) return
