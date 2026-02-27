@@ -86,7 +86,7 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({
 
     try {
       // Insert message to database
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('messages')
         .insert({
           room_id: roomId,
