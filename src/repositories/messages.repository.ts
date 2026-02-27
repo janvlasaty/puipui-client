@@ -7,12 +7,15 @@ export const getLastMessagesByRoomIds = (roomIds: string[]) =>
     .in('room_id', roomIds)
     .order('created_at', { ascending: false })
 
-export const getMessagesByRoom = (roomId: string) =>
-  supabase
+export const getMessagesByRoom = (roomId: string, topicId: string | null = null) => {
+  const query = supabase
     .from('messages')
     .select('*')
     .eq('room_id', roomId)
     .order('created_at', { ascending: true })
+
+  return topicId === null ? query.is('topic_id', null) : query.eq('topic_id', topicId)
+}
 
 export const insertMessage = (roomId: string, userId: string, content: string) =>
   supabase
