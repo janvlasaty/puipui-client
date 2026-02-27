@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { ChatConversation } from '../components/ChatConversation'
 import { useAuth } from '../hooks/useAuth'
 import { getMessagesByRoom, insertMessage } from '../repositories/messages.repository'
+import { getRoomUsersWithProfiles } from '../repositories/rooms.repository'
 
 interface Message {
   id: string
@@ -17,83 +18,62 @@ interface Message {
 
 interface ChatDirectPageProps {
   roomId: string
-  friendName: string
-  friendAvatar: string
   onBack: () => void
 }
 
-export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({
-  roomId,
-  friendName,
-  friendAvatar,
-  onBack,
-}) => {
+export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({ roomId, onBack }) => {
   const { session } = useAuth()
   const [conversationMessages, setConversationMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
+  const [friendName, setFriendName] = useState('')
+  const [friendAvatar, setFriendAvatar] = useState('')
+
+  useEffect(() => {
+    const loadFriendData = async () => {
+      if (!session?.user?.id) return
+      const { data: roomUsers, error } = await getRoomUsersWithProfiles(roomId)
+      if (error) return
+      const otherUser = (roomUsers || []).find((ru) => ru.user_id !== session.user.id)
+      setFriendName(otherUser?.profiles?.name || 'Unknown')
+      setFriendAvatar(otherUser?.profiles?.avatar || '')
+    }
+    loadFriendData()
+  }, [roomId, session?.user?.id])
 
   const fetchMessages = async (showLoading = true) => {
-    if (!roomId || !session?.user?.id) {
-      console.log('Skipping fetch: roomId or session?.user?.id missing', { roomId, userId: session?.user?.id })
-      return
-    }
+    if (!roomId || !session?.user?.id) return
 
     try {
       if (showLoading) setLoading(true)
-      console.log('=== FETCHING MESSAGES ===')
-      console.log('Current user ID:', session?.user?.id)
-      
+
       const { data: messages, error } = await getMessagesByRoom(roomId)
 
       if (error) throw error
 
-      console.log('Raw messages from DB:', messages)
-
-      // Convert database messages to Message format
-      const formattedMessages: Message[] = (messages || []).map((msg: any, index: number, msgs: any[]) => {
+      const formattedMessages: Message[] = (messages || []).map((msg, index, msgs) => {
         const isSender = msg.user_id === session.user.id
         const createdAt = new Date(msg.created_at)
-        console.log(`Message "${msg.content}": user_id="${msg.user_id}" vs session.user.id="${session.user.id}" -> isSender=${isSender}`)
-        
-        // Check if we should show timestamp and sender name
-        // Show timestamp if it's the last message OR if the next message is from a different sender OR if > 15 minutes passed
+
         let showTimestamp = true
         let showSenderName = true
-        
+
         if (index < msgs.length - 1) {
           const nextMsg = msgs[index + 1]
-          const nextSender = nextMsg.user_id === session.user.id
-          const nextCreatedAt = new Date(nextMsg.created_at)
-          const timeDiffMinutes = (nextCreatedAt.getTime() - createdAt.getTime()) / (1000 * 60)
-          
-          // Hide timestamp if: same sender AND less than 15 minutes apart
-          if (isSender === nextSender && timeDiffMinutes < 15) {
-            showTimestamp = false
-          }
+          const timeDiffMinutes = (new Date(nextMsg.created_at).getTime() - createdAt.getTime()) / (1000 * 60)
+          if (isSender === (nextMsg.user_id === session.user.id) && timeDiffMinutes < 15) showTimestamp = false
         }
-        
-        // Show sender name only if it's the first message in a group
-        // (previous message is from different sender or > 15 minutes ago or it's the first message)
+
         if (index > 0) {
           const prevMsg = msgs[index - 1]
-          const prevSender = prevMsg.user_id === session.user.id
-          const prevCreatedAt = new Date(prevMsg.created_at)
-          const timeDiffMinutes = (createdAt.getTime() - prevCreatedAt.getTime()) / (1000 * 60)
-          
-          // Hide sender name if: same sender AND less than 15 minutes apart
-          if (isSender === prevSender && timeDiffMinutes < 15) {
-            showSenderName = false
-          }
+          const timeDiffMinutes = (createdAt.getTime() - new Date(prevMsg.created_at).getTime()) / (1000 * 60)
+          if (isSender === (prevMsg.user_id === session.user.id) && timeDiffMinutes < 15) showSenderName = false
         }
-        
+
         return {
           id: msg.id,
           text: msg.content,
           sender: isSender ? 'user' : 'other',
-          timestamp: createdAt.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
+          timestamp: createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           showTimestamp,
           showSenderName,
           senderName: isSender ? undefined : friendName,

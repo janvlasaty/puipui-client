@@ -26,3 +26,9 @@ export const createProfile = (userId: string, name: string, surname: string) =>
     .insert([{ user_id: userId, name, surname }])
     .select()
     .single()
+
+export const updateProfile = (userId: string, name: string, surname: string) =>
+  supabase
+    .from('profiles')
+    .update({ name, surname })
+    .eq('user_id', userId)

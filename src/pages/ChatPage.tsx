@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { ChatListPage } from './ChatListPage'
 import { ChatDirectPage } from './ChatDirectPage'
 import type { Friend } from '../components/FriendsList'
-import { getProfileById } from '../repositories/profiles.repository'
 
 interface ChatPageProps {
   onDirectChatChange: (isInDirectChat: boolean) => void
@@ -11,77 +10,36 @@ interface ChatPageProps {
   onCloseDirectChat?: () => void
 }
 
-export const ChatPage: React.FC<ChatPageProps> = ({ 
-  onDirectChatChange, 
+export const ChatPage: React.FC<ChatPageProps> = ({
+  onDirectChatChange,
   directChatRoomId,
   onOpenDirectChat,
-  onCloseDirectChat
+  onCloseDirectChat,
 }) => {
-  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null)
-  const [loadingDirectChat, setLoadingDirectChat] = useState(false)
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(directChatRoomId ?? null)
 
-  // Initialize from URL roomId - load friend info
   useEffect(() => {
-    if (!directChatRoomId) {
-      setSelectedFriend(null)
-      return
-    }
-
-    const loadFriendData = async () => {
-      try {
-        setLoadingDirectChat(true)
-        const { data: friendData, error } = await getProfileById(directChatRoomId)
-
-        if (error) throw error
-
-        if (friendData) {
-          const friend: Friend = {
-            id: friendData.id,
-            name: friendData.name || 'Unknown',
-            avatar: friendData.avatar || '',
-            lastMessage: '',
-            timestamp: '',
-          }
-          setSelectedFriend(friend)
-        }
-      } catch (error) {
-        console.error('Error loading friend data:', error)
-      } finally {
-        setLoadingDirectChat(false)
-      }
-    }
-
-    loadFriendData()
+    setSelectedRoomId(directChatRoomId ?? null)
   }, [directChatRoomId])
 
   useEffect(() => {
-    onDirectChatChange(!!selectedFriend)
-  }, [selectedFriend, onDirectChatChange])
+    onDirectChatChange(!!selectedRoomId)
+  }, [selectedRoomId, onDirectChatChange])
 
   const handleSelectFriend = (friend: Friend) => {
-    setSelectedFriend(friend)
+    setSelectedRoomId(friend.id)
     onOpenDirectChat?.(friend.id)
   }
 
   const handleBackToList = () => {
-    setSelectedFriend(null)
+    setSelectedRoomId(null)
     onCloseDirectChat?.()
   }
 
-  if (loadingDirectChat) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Loading chat...</p>
-      </div>
-    )
-  }
-
-  if (selectedFriend) {
+  if (selectedRoomId) {
     return (
       <ChatDirectPage
-        roomId={selectedFriend.id}
-        friendName={selectedFriend.name}
-        friendAvatar={selectedFriend.avatar}
+        roomId={selectedRoomId}
         onBack={handleBackToList}
       />
     )

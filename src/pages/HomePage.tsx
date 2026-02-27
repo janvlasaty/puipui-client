@@ -3,7 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { ChatListPage } from './ChatListPage'
-import { ChatDirectPageWrapper } from './ChatDirectPageWrapper'
+import { ChatDirectPage } from './ChatDirectPage'
 import { MapPage } from './MapPage'
 import { InterestsPage } from './InterestsPage'
 import { BottomNavigation } from '../components/BottomNavigation'
@@ -58,7 +58,7 @@ export const HomePage = () => {
   return (
     <div className="min-h-screen bg-background">
       {activeTab === 'chat' && roomId ? (
-        <ChatDirectPageWrapper roomId={roomId} onBack={handleBackFromDirectChat} />
+        <ChatDirectPage roomId={roomId} onBack={handleBackFromDirectChat} />
       ) : null}
       {activeTab === 'chat' && !roomId ? (
         <ChatListPage onSelectFriend={handleSelectFriend} />

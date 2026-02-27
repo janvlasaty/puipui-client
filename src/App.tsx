@@ -6,6 +6,7 @@ import { AuthPage } from './pages/AuthPage'
 import { HomePage } from './pages/HomePage'
 import { CreateProfilePage } from './pages/CreateProfilePage'
 import { SelectProfilePage } from './pages/SelectProfilePage'
+import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
   const { session, loading } = useAuth()
@@ -61,6 +62,7 @@ function App() {
         <Route path="/chat" element={<HomePage />} />
         <Route path="/map" element={<HomePage />} />
         <Route path="/interests" element={<HomePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="/" element={<Navigate to="/chat" replace />} />
       </Routes>
     </Router>

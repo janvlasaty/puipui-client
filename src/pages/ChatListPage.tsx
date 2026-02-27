@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Settings } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useDataCache } from '../contexts/DataCacheContext'
 import { FriendsList, type Friend } from '../components/FriendsList'
-import { Button } from '@/components/ui/button'
-import { supabase } from '../lib/supabase'
 import type { Tables } from '../types/database'
 import { getRoomsWithProfiles } from '../repositories/rooms.repository'
 import { getLastMessagesByRoomIds } from '../repositories/messages.repository'
@@ -13,6 +13,7 @@ interface ChatListPageProps {
 }
 
 export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) => {
+  const navigate = useNavigate()
   const { session } = useAuth()
   const { roomsCache, setRoomsCache, setRoomsLoading, isCacheStale } = useDataCache()
 
@@ -86,15 +87,17 @@ export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) =>
     }
   }
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-  }
-
   const friends = roomsCache.data || []
   const loading = roomsCache.loading && !roomsCache.data
 
   return (
     <div className="flex flex-col min-h-screen">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-border">
+        <h1 className="text-lg font-semibold">Chats</h1>
+        <button onClick={() => navigate('/settings')} className="p-1 hover:bg-muted rounded transition-colors">
+          <Settings size={20} />
+        </button>
+      </div>
       {loading ? (
         <div className="flex items-center justify-center flex-1">
           <p className="text-muted-foreground">Loading rooms...</p>
@@ -106,11 +109,6 @@ export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) =>
       ) : (
         <FriendsList friends={friends} onSelectFriend={onSelectFriend} />
       )}
-      <div className="fixed bottom-6 left-0 right-0 flex justify-center">
-        <Button onClick={handleSignOut} variant="destructive" size="sm">
-          Sign Out
-        </Button>
-      </div>
     </div>
   )
 }
