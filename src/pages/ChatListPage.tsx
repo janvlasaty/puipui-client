@@ -1,8 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
+import { useDataCache } from '../contexts/DataCacheContext'
 import { FriendsList, type Friend } from '../components/FriendsList'
 import { Button } from '@/components/ui/button'
 import { supabase } from '../lib/supabase'
+import type { Tables } from '../types/database'
+import { getRoomsWithProfiles } from '../repositories/rooms.repository'
+import { getLastMessagesByRoomIds } from '../repositories/messages.repository'
 
 interface ChatListPageProps {
   onSelectFriend: (friend: Friend) => void
@@ -10,84 +14,84 @@ interface ChatListPageProps {
 
 export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) => {
   const { session } = useAuth()
-  const [friends, setFriends] = useState<Friend[]>([])
-  const [loading, setLoading] = useState(true)
+  const { roomsCache, setRoomsCache, setRoomsLoading, isCacheStale } = useDataCache()
 
   useEffect(() => {
     if (!session?.user?.id) return
+    
+    // Show cached data immediately if available
+    // But fetch fresh data in background if cache is stale
+    if (roomsCache.data && !isCacheStale(roomsCache.lastFetched)) {
+      return // Use cached data
+    }
+
     fetchRooms()
   }, [session?.user?.id])
 
   const fetchRooms = async () => {
+    if (!session?.user?.id) return
+
     try {
-      setLoading(true)
-      // Get rooms for current user
-      const { data: roomsData, error: roomsError } = await supabase
-        .from('rooms_users')
-        .select('room_id')
-        .eq('user_id', session?.user?.id)
+      setRoomsLoading(true)
+      
+      const { data: rooms, error: roomsError } = await getRoomsWithProfiles()
 
       if (roomsError) throw roomsError
 
-      if (!roomsData || roomsData.length === 0) {
-        setFriends([])
-        return
-      }
+      const roomIds = (rooms || []).map((room) => room.id)
 
-      const roomIds = roomsData.map((r) => r.room_id)
+      const { data: messages, error: messagesError } = await getLastMessagesByRoomIds(roomIds)
 
-      // Get room details with members
-      const { data: rooms, error: roomsDetailsError } = await supabase
-        .from('rooms')
-        .select(
-          `
-          *,
-          rooms_users (user_id)
-        `
-        )
-        .in('id', roomIds)
+      if (messagesError) throw messagesError
 
-      if (roomsDetailsError) throw roomsDetailsError
-
-      console.log('Fetched rooms data:', rooms)
+      // Create a map of roomId to its last message
+      const messagesMap: Record<string, Tables<'messages'>> = {};
+      (messages || []).forEach((msg) => {
+        if (!messagesMap[msg.room_id]) {
+          messagesMap[msg.room_id] = msg
+        }
+      })
 
       // Convert rooms to Friend format for display
-      const friendsList: Friend[] = (rooms || []).map((room: any) => {
-        console.log('Processing room:', room)
+      const friendsList: Friend[] = (rooms || []).map((room) => {
         let roomName = room.label || 'Chat Room'
 
-        // For direct rooms, always use the user IDs
+        // For direct rooms, get the other user's name
         if (room.is_direct && room.rooms_users) {
-          console.log('Direct room members:', room.rooms_users)
-          const userIds = (room.rooms_users || [])
-            .map((u: any) => u.user_id)
-            .filter((id: string) => id !== session?.user?.id)
-          console.log('Filtered user IDs:', userIds)
-          roomName = userIds.join(', ') || 'Direct Message'
+          const otherUser = room.rooms_users.find(
+            (ru) => ru.user_id !== session?.user?.id
+          )
+
+          if (otherUser?.profiles?.name) {
+            roomName = otherUser.profiles.name
+          } else {
+            roomName = 'Direct Message'
+          }
         }
 
         return {
           id: room.id,
           name: roomName,
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${room.id}`,
-          lastMessage: 'No messages yet',
-          timestamp: 'Just now',
+          lastMessage: messagesMap[room.id]?.content || 'No messages yet',
+          timestamp: messagesMap[room.id]?.created_at ? new Date(messagesMap[room.id].created_at).toLocaleDateString() : 'Just now',
           unread: 0,
         }
       })
 
-      setFriends(friendsList)
+      setRoomsCache(friendsList)
     } catch (error) {
       console.error('Error fetching rooms:', error)
-      setFriends([])
-    } finally {
-      setLoading(false)
+      setRoomsCache([], error as Error)
     }
   }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
   }
+
+  const friends = roomsCache.data || []
+  const loading = roomsCache.loading && !roomsCache.data
 
   return (
     <div className="flex flex-col min-h-screen">

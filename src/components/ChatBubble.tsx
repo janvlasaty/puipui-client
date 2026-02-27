@@ -2,32 +2,27 @@ interface ChatBubbleProps {
   message: string
   sender: 'user' | 'other'
   timestamp: string
+  showTimestamp: boolean
+  showSenderName: boolean
   senderName?: string
-  avatar?: string
 }
 
 export const ChatBubble: React.FC<ChatBubbleProps> = ({
   message,
   sender,
   timestamp,
+  showTimestamp,
+  showSenderName,
   senderName,
-  avatar,
 }) => {
   const isUserMessage = sender === 'user'
 
   return (
-    <div className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'} ${showTimestamp ? 'mb-4' : 'mb-1'}`}>
       <div className={`flex gap-2 max-w-xs ${isUserMessage ? 'flex-row-reverse' : 'flex-row'}`}>
-        {!isUserMessage && avatar && (
-          <img
-            src={avatar}
-            alt={senderName}
-            className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-          />
-        )}
 
         <div className={`${isUserMessage ? 'items-end' : 'items-start'} flex flex-col`}>
-          {!isUserMessage && senderName && (
+          {!isUserMessage && senderName && showSenderName && (
             <span className="text-xs text-muted-foreground mb-1 px-3">{senderName}</span>
           )}
           <div
@@ -39,7 +34,9 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           >
             <p className="text-sm leading-relaxed break-words">{message}</p>
           </div>
-          <span className="text-xs text-muted-foreground mt-1 px-3">{timestamp}</span>
+          {showTimestamp && (
+            <span className="text-xs text-muted-foreground mt-1 px-3">{timestamp}</span>
+          )}
         </div>
       </div>
     </div>

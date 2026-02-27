@@ -1,15 +1,9 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import { Database } from '../types/database'
+import { getPoisInBounds, getAllPois, type MapBounds } from '../repositories/pois.repository'
 
 export type POI = Database['public']['Tables']['pois']['Row']
-
-export interface MapBounds {
-  minLng: number
-  maxLng: number
-  minLat: number
-  maxLat: number
-}
+export type { MapBounds }
 
 export const usePois = () => {
   const [pois, setPois] = useState<POI[]>([])
@@ -20,20 +14,7 @@ export const usePois = () => {
     setLoading(true)
     setError(null)
     try {
-      let query = supabase
-        .from('pois')
-        .select('*')
-
-      // Apply bounds filter if provided
-      if (bounds) {
-        query = query
-          .gte('latitude', bounds.minLat)
-          .lte('latitude', bounds.maxLat)
-          .gte('longitude', bounds.minLng)
-          .lte('longitude', bounds.maxLng)
-      }
-
-      const { data, error: supabaseError } = await query
+      const { data, error: supabaseError } = await (bounds ? getPoisInBounds(bounds) : getAllPois())
 
       if (supabaseError) {
         throw new Error(supabaseError.message)

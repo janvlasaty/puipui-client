@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import mapboxgl from 'mapbox-gl'
 import type { Map as MapboxMap, Marker as MapboxMarker, LngLatLike } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { usePois } from '../hooks/usePois'
+import { useDataCache } from '../contexts/DataCacheContext'
+import { getPoisInBounds } from '../repositories/pois.repository'
 import { Button } from '@/components/ui/button'
 import { X, Plus, Crosshair } from 'lucide-react'
 
@@ -10,7 +11,7 @@ const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 const MAP_STYLE_LIGHT = import.meta.env.VITE_MAPBOX_STYLE
 
 export const MapPage = () => {
-  const { pois, error, fetchPois } = usePois()
+  const { poisCache, setPoisCache, setPoisLoading, isCacheStale } = useDataCache()
 
   // State with localStorage persistence
   const [mapState, setMapState] = useState(() => {
@@ -58,6 +59,10 @@ export const MapPage = () => {
     })
 
     map.current.on('load', () => {
+      // Show cached data immediately if available
+      if (poisCache.data && !isCacheStale(poisCache.lastFetched)) {
+        return
+      }
       fetchPoiData()
     })
 
@@ -94,14 +99,26 @@ export const MapPage = () => {
     const mapBounds = map.current.getBounds()
     if (!mapBounds) return
 
+    setPoisLoading(true)
     // Fetch POIs within current view bounds
-    fetchPois({
+    const bounds = {
       minLng: mapBounds.getWest(),
       maxLng: mapBounds.getEast(),
       minLat: mapBounds.getSouth(),
       maxLat: mapBounds.getNorth(),
-    })
-  }, [fetchPois])
+    }
+    
+    getPoisInBounds(bounds).then(({ data, error }) => {
+        if (error) {
+          console.error('Error fetching POIs:', error)
+          setPoisCache([], error)
+        } else {
+          setPoisCache(data || [])
+        }
+      })
+  }, [setPoisCache, setPoisLoading])
+
+  const pois = poisCache.data || []
 
   // Handle POI markers
   useEffect(() => {
@@ -183,9 +200,9 @@ export const MapPage = () => {
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full z-0" />
       
-      {error && (
+      {poisCache.error && (
         <div className="fixed bottom-24 left-4 right-4 z-10 bg-destructive/10 border border-destructive rounded-lg p-4">
-          <p className="text-destructive font-semibold">Error: {error}</p>
+          <p className="text-destructive font-semibold">Error: {poisCache.error.message}</p>
         </div>
       )}
 

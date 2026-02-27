@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { useProfile } from './hooks/useProfile'
 import { AuthPage } from './pages/AuthPage'
@@ -53,7 +54,17 @@ function App() {
     return <CreateProfilePage />
   }
 
-  return <HomePage />
+  return (
+    <Router basename="/puipui-client">
+      <Routes>
+        <Route path="/chat/:roomId" element={<HomePage />} />
+        <Route path="/chat" element={<HomePage />} />
+        <Route path="/map" element={<HomePage />} />
+        <Route path="/interests" element={<HomePage />} />
+        <Route path="/" element={<Navigate to="/chat" replace />} />
+      </Routes>
+    </Router>
+  )
 }
 
 export default App

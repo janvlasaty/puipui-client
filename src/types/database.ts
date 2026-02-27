@@ -166,6 +166,7 @@ export type Database = {
           id: string
           name: string
           surname: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -174,6 +175,7 @@ export type Database = {
           id?: string
           name: string
           surname: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -182,6 +184,7 @@ export type Database = {
           id?: string
           name?: string
           surname?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -234,6 +237,13 @@ export type Database = {
             referencedRelation: "rooms"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "rooms_users_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       topics: {
@@ -273,7 +283,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_in_room: { Args: { p_room_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

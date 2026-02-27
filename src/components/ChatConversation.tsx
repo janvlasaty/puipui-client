@@ -1,4 +1,4 @@
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, User } from 'lucide-react'
 import { ChatBubble } from './ChatBubble'
 import { useEffect, useRef } from 'react'
 
@@ -7,6 +7,8 @@ interface Message {
   text: string
   sender: 'user' | 'other'
   timestamp: string
+  showTimestamp: boolean
+  showSenderName: boolean
   senderName?: string
   avatar?: string
 }
@@ -55,11 +57,17 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
             <ChevronLeft size={24} />
           </button>
           <div className="flex-1 flex items-center gap-3">
-            <img
-              src={friendAvatar}
-              alt={friendName}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            {friendAvatar ? (
+              <img
+                src={friendAvatar}
+                alt={friendName}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <User size={20} className="text-muted-foreground" />
+              </div>
+            )}
             <div>
               <h2 className="font-bold">{friendName}</h2>
               <p className="text-xs text-muted-foreground">Online</p>
@@ -68,7 +76,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto flex flex-col justify-end">
         <div className="container mx-auto py-6 px-4">
           <div className="max-w-2xl mx-auto">
             {messages.map((message) => (
@@ -77,8 +85,9 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                 message={message.text}
                 sender={message.sender}
                 timestamp={message.timestamp}
+                showTimestamp={message.showTimestamp}
+                showSenderName={message.showSenderName}
                 senderName={message.senderName}
-                avatar={message.avatar}
               />
             ))}
             <div ref={messagesEndRef} />

@@ -1,7 +1,11 @@
 import { useState, createContext, useContext, ReactNode } from 'react'
 import React from 'react'
-import { supabase } from '../lib/supabase'
 import { Database } from '../types/database'
+import {
+  getProfileByUserId,
+  getAllProfilesByUserId,
+  createProfile as createProfileQuery,
+} from '../repositories/profiles.repository'
 
 export type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -39,11 +43,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     setError(null)
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+      const { data, error: fetchError } = await getProfileByUserId(userId)
 
       if (fetchError) {
         if (fetchError.code === 'PGRST116') {
@@ -70,10 +70,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     setError(null)
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
+      const { data, error: fetchError } = await getAllProfilesByUserId(userId)
 
       if (fetchError) throw fetchError
 
@@ -102,11 +99,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     setError(null)
 
     try {
-      const { data, error: insertError } = await supabase
-        .from('profiles')
-        .insert([{ user_id: userId, name, surname }])
-        .select()
-        .single()
+      const { data, error: insertError } = await createProfileQuery(userId, name, surname)
 
       if (insertError) throw insertError
 
