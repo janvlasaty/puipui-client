@@ -39,29 +39,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      friendships: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          id: string
+          user_a_id: string
+          user_b_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          user_a_id: string
+          user_b_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          user_a_id?: string
+          user_b_id?: string
+        }
+        Relationships: []
+      }
+      invitations: {
+        Row: {
+          code: string
+          created_at: string
+          expire_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expire_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expire_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
+          archived_at: string | null
           content: string
           created_at: string
           edited_at: string
           id: string
           room_id: string
+          topic_id: string | null
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
           content: string
           created_at?: string
           edited_at?: string
           id?: string
           room_id: string
+          topic_id?: string | null
           user_id: string
         }
         Update: {
+          archived_at?: string | null
           content?: string
           created_at?: string
           edited_at?: string
           id?: string
           room_id?: string
+          topic_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -70,6 +124,13 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
             referencedColumns: ["id"]
           },
         ]
@@ -168,6 +229,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "rooms_users_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topics: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          id: string
+          label: string
+          room_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          label: string
+          room_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          label?: string
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topics_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"

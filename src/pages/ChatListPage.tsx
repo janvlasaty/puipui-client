@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { FriendsList, type Friend } from '../components/FriendsList'
 import { Button } from '@/components/ui/button'
@@ -8,50 +9,81 @@ interface ChatListPageProps {
 }
 
 export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) => {
-  const { session: _session } = useAuth()
+  const { session } = useAuth()
+  const [friends, setFriends] = useState<Friend[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const friends: Friend[] = [
-    {
-      id: '1',
-      name: 'Alex Johnson',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-      lastMessage: 'That sounds awesome! What kind of features?',
-      timestamp: '10:32 AM',
-      unread: 0,
-    },
-    {
-      id: '2',
-      name: 'Sarah Williams',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-      lastMessage: 'See you at the meeting tomorrow!',
-      timestamp: 'Yesterday',
-      unread: 2,
-    },
-    {
-      id: '3',
-      name: 'Mike Chen',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mike',
-      lastMessage: 'Sounds good! Let me know when you\'re free',
-      timestamp: '2 days ago',
-      unread: 0,
-    },
-    {
-      id: '4',
-      name: 'Emma Davis',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emma',
-      lastMessage: 'That project looks amazing! 🎉',
-      timestamp: '3 days ago',
-      unread: 0,
-    },
-    {
-      id: '5',
-      name: 'James Brown',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=James',
-      lastMessage: 'Let\'s catch up soon',
-      timestamp: 'Last week',
-      unread: 0,
-    },
-  ]
+  useEffect(() => {
+    if (!session?.user?.id) return
+    fetchRooms()
+  }, [session?.user?.id])
+
+  const fetchRooms = async () => {
+    try {
+      setLoading(true)
+      // Get rooms for current user
+      const { data: roomsData, error: roomsError } = await supabase
+        .from('rooms_users')
+        .select('room_id')
+        .eq('user_id', session?.user?.id)
+
+      if (roomsError) throw roomsError
+
+      if (!roomsData || roomsData.length === 0) {
+        setFriends([])
+        return
+      }
+
+      const roomIds = roomsData.map((r) => r.room_id)
+
+      // Get room details with members
+      const { data: rooms, error: roomsDetailsError } = await supabase
+        .from('rooms')
+        .select(
+          `
+          *,
+          rooms_users (user_id)
+        `
+        )
+        .in('id', roomIds)
+
+      if (roomsDetailsError) throw roomsDetailsError
+
+      console.log('Fetched rooms data:', rooms)
+
+      // Convert rooms to Friend format for display
+      const friendsList: Friend[] = (rooms || []).map((room: any) => {
+        console.log('Processing room:', room)
+        let roomName = room.label || 'Chat Room'
+
+        // For direct rooms, always use the user IDs
+        if (room.is_direct && room.rooms_users) {
+          console.log('Direct room members:', room.rooms_users)
+          const userIds = (room.rooms_users || [])
+            .map((u: any) => u.user_id)
+            .filter((id: string) => id !== session?.user?.id)
+          console.log('Filtered user IDs:', userIds)
+          roomName = userIds.join(', ') || 'Direct Message'
+        }
+
+        return {
+          id: room.id,
+          name: roomName,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${room.id}`,
+          lastMessage: 'No messages yet',
+          timestamp: 'Just now',
+          unread: 0,
+        }
+      })
+
+      setFriends(friendsList)
+    } catch (error) {
+      console.error('Error fetching rooms:', error)
+      setFriends([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -59,7 +91,17 @@ export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) =>
 
   return (
     <div className="flex flex-col min-h-screen">
-      <FriendsList friends={friends} onSelectFriend={onSelectFriend} />
+      {loading ? (
+        <div className="flex items-center justify-center flex-1">
+          <p className="text-muted-foreground">Loading rooms...</p>
+        </div>
+      ) : friends.length === 0 ? (
+        <div className="flex items-center justify-center flex-1">
+          <p className="text-muted-foreground">No chat rooms yet</p>
+        </div>
+      ) : (
+        <FriendsList friends={friends} onSelectFriend={onSelectFriend} />
+      )}
       <div className="fixed bottom-6 left-0 right-0 flex justify-center">
         <Button onClick={handleSignOut} variant="destructive" size="sm">
           Sign Out

@@ -25,6 +25,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({ onDirectChatChange }) => {
   if (selectedFriend) {
     return (
       <ChatDirectPage
+        roomId={selectedFriend.id}
         friendName={selectedFriend.name}
         friendAvatar={selectedFriend.avatar}
         onBack={handleBackToList}
