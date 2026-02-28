@@ -19,8 +19,8 @@ export default defineConfig(({ mode }) => {
           skipWaiting: true,
         },
         manifest: {
-          name: 'Puipui',
-          short_name: 'Puipui',
+          name: 'PuiPui',
+          short_name: 'PuiPui',
           start_url: '.',
           display: 'standalone',
           background_color: '#ffffff',
