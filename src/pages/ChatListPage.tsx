@@ -1,6 +1,4 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Settings } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useDataCache } from '../contexts/DataCacheContext'
 import { FriendsList, type Friend } from '../components/FriendsList'
@@ -13,7 +11,6 @@ interface ChatListPageProps {
 }
 
 export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) => {
-  const navigate = useNavigate()
   const { session } = useAuth()
   const { roomsCache, setRoomsCache, setRoomsLoading, isCacheStale } = useDataCache()
 
@@ -92,12 +89,6 @@ export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) =>
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="flex items-center justify-between px-4 py-4 border-b border-border">
-        <h1 className="text-lg font-semibold">Chats</h1>
-        <button onClick={() => navigate('/settings')} className="p-1 hover:bg-muted rounded transition-colors">
-          <Settings size={20} />
-        </button>
-      </div>
       {loading ? (
         <div className="flex items-center justify-center flex-1">
           <p className="text-muted-foreground">Loading rooms...</p>

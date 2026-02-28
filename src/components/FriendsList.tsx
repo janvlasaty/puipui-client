@@ -1,4 +1,5 @@
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Settings } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export interface Friend {
   id: string
@@ -15,12 +16,19 @@ interface FriendsListProps {
 }
 
 export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFriend }) => {
+  const navigate = useNavigate()
+
   return (
     <div className="min-h-screen bg-background pb-24 flex flex-col">
       <div className="sticky top-0 bg-background border-b border-border px-4 py-4">
-        <div className="container mx-auto">
-          <h1 className="text-2xl font-bold">Messages</h1>
-          <p className="text-sm text-muted-foreground">Your conversations</p>
+        <div className="container mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Messages</h1>
+            <p className="text-sm text-muted-foreground">Your conversations</p>
+          </div>
+          <button onClick={() => navigate('/settings')} className="p-1 hover:bg-muted rounded transition-colors">
+            <Settings size={20} />
+          </button>
         </div>
       </div>
 

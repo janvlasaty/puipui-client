@@ -9,6 +9,14 @@ import { SelectProfilePage } from './pages/SelectProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 
 function App() {
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const registration = await navigator.serviceWorker?.getRegistration()
+      registration?.update()
+    }, 60_000)
+    return () => clearInterval(interval)
+  }, [])
+
   const { session, loading } = useAuth()
   const { profile, loading: profileLoading, fetchProfile, fetchAllProfiles } = useProfile()
   const [hasMultipleProfiles, setHasMultipleProfiles] = useState(false)
