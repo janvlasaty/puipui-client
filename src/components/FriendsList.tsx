@@ -1,4 +1,4 @@
-import { MessageCircle, Settings } from 'lucide-react'
+import { MessageCircle, Settings, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export interface Friend {
@@ -20,12 +20,9 @@ export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFrien
 
   return (
     <div className="min-h-screen bg-background pb-24 flex flex-col">
-      <div className="sticky top-0 bg-background border-b border-border px-4 py-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Messages</h1>
-            <p className="text-sm text-muted-foreground">Your conversations</p>
-          </div>
+      <div className="sticky top-0 bg-background border-b border-border px-4 py-4 z-10">
+        <div className="max-w-2xl mx-auto w-full flex items-center justify-between">
+          <h1 className="text-lg font-semibold">Messages</h1>
           <button onClick={() => navigate('/settings')} className="p-1 hover:bg-muted rounded transition-colors">
             <Settings size={20} />
           </button>
@@ -33,7 +30,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFrien
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto">
+        <div className="max-w-2xl mx-auto w-full">
           {friends.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <MessageCircle size={48} className="text-muted-foreground mb-4 opacity-50" />
@@ -48,11 +45,17 @@ export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFrien
                   onClick={() => onSelectFriend(friend)}
                   className="w-full px-4 py-4 hover:bg-card/50 transition-colors text-left flex items-center gap-3"
                 >
-                  <img
-                    src={friend.avatar}
-                    alt={friend.name}
-                    className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                  />
+                  {friend.avatar ? (
+                    <img
+                      src={friend.avatar}
+                      alt={friend.name}
+                      className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <User size={22} className="text-muted-foreground" />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="font-semibold text-foreground">{friend.name}</h3>

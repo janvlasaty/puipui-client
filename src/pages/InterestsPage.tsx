@@ -13,10 +13,14 @@ export const InterestsPage = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <div className="container mx-auto py-12 px-4">
+      <div className="sticky top-0 bg-background border-b border-border px-4 py-4 z-10">
+        <div className="max-w-2xl mx-auto w-full flex items-center">
+          <h1 className="text-lg font-semibold">Interests</h1>
+        </div>
+      </div>
+      <div className="container mx-auto py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-4">⭐ Interests</h1>
             <p className="text-muted-foreground">
               Welcome, {profile?.name} {profile?.surname}!
             </p>

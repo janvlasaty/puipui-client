@@ -7,6 +7,7 @@ import { HomePage } from './pages/HomePage'
 import { CreateProfilePage } from './pages/CreateProfilePage'
 import { SelectProfilePage } from './pages/SelectProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
+import { ChatListSkeleton } from './components/ChatListSkeleton'
 
 function App() {
   useEffect(() => {
@@ -44,11 +45,7 @@ function App() {
   }
 
   if (loading || profileLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-muted-foreground">Loading...</p>
-      </div>
-    )
+    return <ChatListSkeleton />
   }
 
   if (!session) {

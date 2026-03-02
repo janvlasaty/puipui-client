@@ -47,57 +47,45 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-background pb-16 flex flex-col">
-      <div className="sticky top-0 bg-background border-b border-border px-4 py-4">
-        <div className="container mx-auto flex items-center gap-3">
+    <div className="h-screen bg-background flex flex-col">
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-4">
+        <div className="max-w-2xl mx-auto w-full flex items-center gap-3">
           <button
             onClick={onBack}
-            className="p-2 hover:bg-card rounded-lg transition-colors"
+            className="p-1 hover:bg-muted rounded transition-colors"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={20} />
           </button>
-          <div className="flex-1 flex items-center gap-3">
-            {friendAvatar ? (
-              <img
-                src={friendAvatar}
-                alt={friendName}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                <User size={20} className="text-muted-foreground" />
-              </div>
-            )}
-            <div>
-              <h2 className="font-bold">{friendName}</h2>
-              <p className="text-xs text-muted-foreground">Online</p>
+          {friendAvatar ? (
+            <img src={friendAvatar} alt={friendName} className="w-7 h-7 rounded-full object-cover" />
+          ) : (
+            <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+              <User size={16} className="text-muted-foreground" />
             </div>
-          </div>
+          )}
+          <h1 className="text-lg font-semibold">{friendName}</h1>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto flex flex-col justify-end">
-        <div className="container mx-auto py-6 px-4">
-          <div className="max-w-2xl mx-auto">
-            {messages.map((message) => (
-              <ChatBubble
-                key={message.id}
-                message={message.text}
-                sender={message.sender}
-                timestamp={message.timestamp}
-                showTimestamp={message.showTimestamp}
-                showSenderName={message.showSenderName}
-                senderName={message.senderName}
-              />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+        <div className="max-w-2xl mx-auto w-full pt-6 pb-4 px-4">
+          {messages.map((message) => (
+            <ChatBubble
+              key={message.id}
+              message={message.text}
+              sender={message.sender}
+              timestamp={message.timestamp}
+              showTimestamp={message.showTimestamp}
+              showSenderName={message.showSenderName}
+              senderName={message.senderName}
+            />
+          ))}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="max-w-2xl mx-auto flex gap-2">
+      <div className="bg-background border-t border-border">
+        <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2">
             <input
               type="text"
               value={inputMessage}
@@ -116,7 +104,6 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
               </svg>
             </button>
-          </div>
         </div>
       </div>
     </div>

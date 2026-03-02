@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useDataCache } from '../contexts/DataCacheContext'
 import { FriendsList, type Friend } from '../components/FriendsList'
+import { ChatListSkeleton } from '../components/ChatListSkeleton'
 import type { Tables } from '../types/database'
 import { getRoomsWithProfiles } from '../repositories/rooms.repository'
 import { getLastMessagesByRoomIds } from '../repositories/messages.repository'
@@ -70,7 +71,7 @@ export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) =>
         return {
           id: room.id,
           name: roomName,
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${room.id}`,
+          avatar: (room.is_direct && room.rooms_users?.find(ru => ru.user_id !== session?.user?.id)?.profiles?.avatar) || '',
           lastMessage: messagesMap[room.id]?.content || 'No messages yet',
           timestamp: messagesMap[room.id]?.created_at ? new Date(messagesMap[room.id].created_at).toLocaleDateString() : 'Just now',
           unread: 0,
@@ -85,21 +86,11 @@ export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) =>
   }
 
   const friends = roomsCache.data || []
-  const loading = roomsCache.loading && !roomsCache.data
+  const loading = !roomsCache.lastFetched
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      {loading ? (
-        <div className="flex items-center justify-center flex-1">
-          <p className="text-muted-foreground">Loading rooms...</p>
-        </div>
-      ) : friends.length === 0 ? (
-        <div className="flex items-center justify-center flex-1">
-          <p className="text-muted-foreground">No chat rooms yet</p>
-        </div>
-      ) : (
-        <FriendsList friends={friends} onSelectFriend={onSelectFriend} />
-      )}
-    </div>
-  )
+  if (loading) {
+    return <ChatListSkeleton />
+  }
+
+  return <FriendsList friends={friends} onSelectFriend={onSelectFriend} />
 }

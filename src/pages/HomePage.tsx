@@ -76,7 +76,7 @@ export const HomePage = () => {
         {activeTab === 'chat' && roomId && (
           <motion.div
             key={roomId}
-            className="absolute inset-0 bg-background"
+            className="absolute inset-0 bg-background z-20"
             variants={slideOverVariants}
             initial="initial"
             animate="animate"

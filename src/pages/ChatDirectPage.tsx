@@ -112,8 +112,38 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({ roomId, onBack }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Loading messages...</p>
+      <div className="h-screen bg-background flex flex-col">
+        <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-4">
+          <div className="max-w-2xl mx-auto w-full flex items-center gap-3">
+            <div className="w-5 h-5 rounded bg-muted animate-pulse flex-shrink-0" />
+            <div className="w-7 h-7 rounded-full bg-muted animate-pulse flex-shrink-0" />
+            <div className="h-5 w-32 rounded bg-muted animate-pulse" />
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col justify-end">
+          <div className="max-w-2xl mx-auto w-full py-6 px-4 space-y-3">
+            {([
+              { sender: 'other', width: 'w-48' },
+              { sender: 'other', width: 'w-36' },
+              { sender: 'user',  width: 'w-52' },
+              { sender: 'user',  width: 'w-28' },
+              { sender: 'other', width: 'w-44' },
+              { sender: 'user',  width: 'w-40' },
+            ] as const).map((item, i) => (
+              <div key={i} className={`flex ${item.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div className={`h-9 rounded-2xl bg-muted animate-pulse ${item.width}`} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border">
+          <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2">
+            <div className="flex-1 h-10 rounded-full bg-muted animate-pulse" />
+            <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+          </div>
+        </div>
       </div>
     )
   }

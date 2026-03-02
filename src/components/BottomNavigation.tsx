@@ -1,4 +1,5 @@
 import { MessageCircle, Map, Star } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 interface BottomNavigationProps {
   activeTab: 'chat' | 'map' | 'interests'
@@ -21,14 +22,21 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, o
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`w-20 py-3 flex flex-col items-center justify-center gap-0.5 rounded-full transition-all duration-200 ${
+              className={`relative w-20 py-3 flex flex-col items-center justify-center gap-0.5 rounded-full ${
                 activeTab === tab.id
-                  ? 'bg-[#DFAF07] text-white'
+                  ? 'text-white'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Icon size={20} className="fill-current" strokeWidth={1.5} />
-              <span className="text-xs font-semibold">{tab.label}</span>
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTabBg"
+                  className="absolute inset-0 bg-[#DFAF07] rounded-full"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <Icon size={20} className="relative z-10 fill-current" strokeWidth={1.5} />
+              <span className="relative z-10 text-xs font-semibold">{tab.label}</span>
             </button>
           )
         })}

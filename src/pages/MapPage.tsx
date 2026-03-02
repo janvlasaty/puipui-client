@@ -199,7 +199,31 @@ export const MapPage = () => {
     <div className="fixed inset-0 w-full h-full bg-background">
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full z-0" />
-      
+
+      {/* Header */}
+      <div className="fixed top-0 left-0 right-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-4">
+        <div className="max-w-2xl mx-auto w-full flex items-center justify-between">
+          <h1 className="text-lg font-semibold">Map</h1>
+          {!isCreatingPoi && (
+            <div className="flex gap-1">
+              <button
+                onClick={handleCreateNew}
+                className="p-1 hover:bg-muted rounded transition-colors"
+              >
+                <Plus size={20} />
+              </button>
+              <button
+                onClick={handleLocateMe}
+                disabled={isLocating}
+                className="p-1 hover:bg-muted rounded transition-colors disabled:opacity-50"
+              >
+                <Crosshair size={20} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {poisCache.error && (
         <div className="fixed bottom-24 left-4 right-4 z-10 bg-destructive/10 border border-destructive rounded-lg p-4">
           <p className="text-destructive font-semibold">Error: {poisCache.error.message}</p>
@@ -208,7 +232,7 @@ export const MapPage = () => {
 
       {/* Selected POI Details */}
       {selectedPoiId && selectedPoi && (
-        <div className="fixed top-4 left-4 right-4 z-10 max-w-md bg-card rounded-lg border border-border p-4 shadow-lg">
+        <div className="fixed top-16 left-4 right-4 z-10 max-w-md bg-card rounded-lg border border-border p-4 shadow-lg">
           <div className="flex justify-between items-start gap-2 mb-2">
             <h2 className="text-lg font-bold">{selectedPoi.label}</h2>
             <button
@@ -233,25 +257,9 @@ export const MapPage = () => {
         </div>
       )}
 
-      {/* Create POI Button */}
-      {!isCreatingPoi ? (
-        <div className="fixed top-4 left-4 z-10 flex gap-2">
-          <button
-            onClick={handleCreateNew}
-            className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shadow-lg"
-          >
-            <Plus size={24} />
-          </button>
-          <button
-            onClick={handleLocateMe}
-            disabled={isLocating}
-            className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 disabled:opacity-50 transition-colors shadow-lg"
-          >
-            <Crosshair size={24} />
-          </button>
-        </div>
-      ) : (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
+      {/* Create POI confirm/cancel */}
+      {isCreatingPoi && (
+        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
           <Button onClick={handleCancel} variant="outline">
             Cancel
           </Button>

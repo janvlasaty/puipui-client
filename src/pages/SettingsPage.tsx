@@ -67,11 +67,13 @@ export const SettingsPage = () => {
       animate={{ x: isExiting ? '100%' : 0 }}
       transition={slideTransition}
     >
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-border">
-        <button onClick={handleBack} className="p-1 hover:bg-muted rounded transition-colors">
-          <ArrowLeft size={20} />
-        </button>
-        <h1 className="text-lg font-semibold">Settings</h1>
+      <div className="sticky top-0 z-10 bg-background px-4 py-4 border-b border-border">
+        <div className="max-w-2xl mx-auto w-full flex items-center gap-3">
+          <button onClick={handleBack} className="p-1 hover:bg-muted rounded transition-colors">
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-lg font-semibold">Settings</h1>
+        </div>
       </div>
 
       <div className="px-4 py-6 max-w-sm mx-auto space-y-8">
