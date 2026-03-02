@@ -6,9 +6,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
+  const base = process.env.VITE_BASE_PATH || (process.env.GITHUB_ACTIONS ? '/puipui-client/' : '/')
 
   return {
-    base: process.env.VITE_BASE_PATH || (process.env.GITHUB_ACTIONS ? '/puipui-client/' : '/'),
+    base,
     plugins: [
       react(),
       tailwindcss(),
@@ -23,8 +24,8 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'PuiPui',
           short_name: 'PuiPui',
-          start_url: '.',
-          scope: '.',
+          start_url: base,
+          scope: base,
           display: 'standalone',
           background_color: '#ffffff',
           theme_color: '#ffffff',

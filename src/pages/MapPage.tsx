@@ -87,9 +87,22 @@ export const MapPage = () => {
 
     map.current.addControl(new mapboxgl.AttributionControl(), 'top-right')
 
+    // Prevent attribution links from opening Safari in-app browser on iOS PWA.
+    // The AttributionControl renders external <a> links which trigger
+    // SFSafariViewController when tapped in standalone PWA mode.
+    const container = mapContainer.current
+    const preventExternalLinks = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest('a[href]')
+      if (anchor) {
+        e.preventDefault()
+      }
+    }
+    container.addEventListener('click', preventExternalLinks, true)
+
     return () => {
       if (fetchDebouncer.current) clearTimeout(fetchDebouncer.current)
       if (map.current) map.current.remove()
+      container.removeEventListener('click', preventExternalLinks, true)
     }
   }, [])
 
