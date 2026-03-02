@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import mapboxgl from 'mapbox-gl'
-import type { Map as MapboxMap, Marker as MapboxMarker, LngLatLike } from 'mapbox-gl'
+import type { Map as MapboxMap, LngLatLike } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { useDataCache } from '../contexts/DataCacheContext'
-import { getPoisInBounds } from '../repositories/pois.repository'
+import { getPoisInBounds, POIS_REQUEST_LIMIT } from '../repositories/pois.repository'
+import { useToast } from '../contexts/ToastContext'
 import { Button } from '@/components/ui/button'
 import { X, Plus, Crosshair } from 'lucide-react'
 
@@ -12,6 +13,7 @@ const MAP_STYLE_LIGHT = import.meta.env.VITE_MAPBOX_STYLE
 
 export const MapPage = () => {
   const { poisCache, setPoisCache, setPoisLoading, isCacheStale } = useDataCache()
+  const { showToast } = useToast()
 
   // State with localStorage persistence
   const [mapState, setMapState] = useState(() => {
@@ -31,7 +33,6 @@ export const MapPage = () => {
   // Refs
   const mapContainer = useRef<HTMLDivElement | null>(null)
   const map = useRef<MapboxMap | null>(null)
-  const markers = useRef<Record<string, MapboxMarker>>({})
   const fetchDebouncer = useRef<NodeJS.Timeout | null>(null)
 
   // Persist map state to localStorage
@@ -51,7 +52,7 @@ export const MapPage = () => {
       center: mapState.center as LngLatLike,
       zoom: mapState.zoom,
       maxZoom: 18,
-      minZoom: 10,
+      minZoom: 6,
       minPitch: 0,
       maxPitch: 0,
       dragRotate: false,
@@ -59,11 +60,104 @@ export const MapPage = () => {
     })
 
     map.current.on('load', () => {
-      // Show cached data immediately if available
-      if (poisCache.data && !isCacheStale(poisCache.lastFetched)) {
-        return
+      const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+        <path d="M14 1C7.373 1 2 6.373 2 13c0 8.5 12 22 12 22S26 21.5 26 13C26 6.373 20.627 1 14 1z" fill="#fbbf24" stroke="#ffffff" stroke-width="2.5"/>
+        <circle cx="14" cy="13" r="5" fill="#ffffff"/>
+      </svg>`
+
+      const markerImg = new Image(28, 36)
+      markerImg.onload = () => {
+        map.current!.addImage('poi-marker', markerImg)
+
+        map.current!.addSource('pois', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+          cluster: true,
+          clusterMaxZoom: 14,
+          clusterRadius: 50,
+        })
+
+        // Cluster circles
+        map.current!.addLayer({
+          id: 'pois-clusters',
+          type: 'circle',
+          source: 'pois',
+          filter: ['has', 'point_count'],
+          paint: {
+            'circle-color': '#fbbf24',
+            'circle-radius': ['step', ['get', 'point_count'], 18, 10, 24, 50, 30],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+          },
+        })
+
+        // Cluster count labels
+        map.current!.addLayer({
+          id: 'pois-cluster-count',
+          type: 'symbol',
+          source: 'pois',
+          filter: ['has', 'point_count'],
+          layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-size': 12,
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          },
+          paint: { 'text-color': '#ffffff' },
+        })
+
+        // Individual points as pin markers
+        map.current!.addLayer({
+          id: 'pois-layer',
+          type: 'symbol',
+          source: 'pois',
+          filter: ['!', ['has', 'point_count']],
+          layout: {
+            'icon-image': 'poi-marker',
+            'icon-size': 1,
+            'icon-anchor': 'bottom',
+            'icon-allow-overlap': true,
+          },
+        })
+
+        map.current!.on('click', 'pois-clusters', (e) => {
+          const feature = e.features?.[0]
+          if (!feature) return
+          const clusterId = feature.properties?.cluster_id
+          const source = map.current!.getSource('pois') as mapboxgl.GeoJSONSource
+          source.getClusterExpansionZoom(clusterId, (err, zoom) => {
+            if (err || zoom == null) return
+            map.current!.easeTo({
+              center: (feature.geometry as GeoJSON.Point).coordinates as [number, number],
+              zoom,
+            })
+          })
+        })
+
+        map.current!.on('click', 'pois-layer', (e) => {
+          const feature = e.features?.[0]
+          if (feature) setSelectedPoiId(feature.properties?.id ?? null)
+        })
+
+        map.current!.on('mouseenter', 'pois-clusters', () => {
+          map.current!.getCanvas().style.cursor = 'pointer'
+        })
+        map.current!.on('mouseleave', 'pois-clusters', () => {
+          map.current!.getCanvas().style.cursor = ''
+        })
+        map.current!.on('mouseenter', 'pois-layer', () => {
+          map.current!.getCanvas().style.cursor = 'pointer'
+        })
+        map.current!.on('mouseleave', 'pois-layer', () => {
+          map.current!.getCanvas().style.cursor = ''
+        })
+
+        // Show cached data immediately if available
+        if (poisCache.data && !isCacheStale(poisCache.lastFetched)) {
+          return
+        }
+        fetchPoiData()
       }
-      fetchPoiData()
+      markerImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markerSvg)
     })
 
     map.current.on('movestart', () => {
@@ -113,12 +207,14 @@ export const MapPage = () => {
     if (!mapBounds) return
 
     setPoisLoading(true)
-    // Fetch POIs within current view bounds
+    // Expand bounds to 2x viewport size for smoother panning
+    const latPad = (mapBounds.getNorth() - mapBounds.getSouth()) / 2
+    const lngPad = (mapBounds.getEast() - mapBounds.getWest()) / 2
     const bounds = {
-      minLng: mapBounds.getWest(),
-      maxLng: mapBounds.getEast(),
-      minLat: mapBounds.getSouth(),
-      maxLat: mapBounds.getNorth(),
+      minLng: mapBounds.getWest() - lngPad,
+      maxLng: mapBounds.getEast() + lngPad,
+      minLat: mapBounds.getSouth() - latPad,
+      maxLat: mapBounds.getNorth() + latPad,
     }
     
     getPoisInBounds(bounds).then(({ data, error }) => {
@@ -127,40 +223,27 @@ export const MapPage = () => {
           setPoisCache([], error)
         } else {
           setPoisCache(data || [])
+          if (data?.length === POIS_REQUEST_LIMIT) {
+            showToast('Zoom in to see all places.')
+          }
         }
       })
   }, [setPoisCache, setPoisLoading])
 
   const pois = poisCache.data || []
 
-  // Handle POI markers
+  // Sync POIs to GeoJSON source
   useEffect(() => {
-    if (!map.current || !pois || pois.length === 0) return
+    const source = map.current?.getSource('pois') as mapboxgl.GeoJSONSource | undefined
+    if (!source) return
 
-    // Remove markers that are no longer in pois
-    Object.keys(markers.current).forEach((poiId) => {
-      if (!pois.find((poi) => poi.id === poiId)) {
-        markers.current[poiId].remove()
-        delete markers.current[poiId]
-      }
-    })
-
-    // Add new markers
-    pois.forEach((poi) => {
-      if (markers.current[poi.id]) return
-
-      const newMarker = new mapboxgl.Marker({
-        color: '#fbbf24',
-        scale: 0.8,
-      })
-        .setLngLat([poi.longitude, poi.latitude])
-        .addTo(map.current!)
-
-      newMarker.getElement().addEventListener('click', () => {
-        setSelectedPoiId(poi.id)
-      })
-
-      markers.current[poi.id] = newMarker
+    source.setData({
+      type: 'FeatureCollection',
+      features: pois.map((poi) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'Point' as const, coordinates: [poi.longitude, poi.latitude] },
+        properties: { id: poi.id, label: poi.label },
+      })),
     })
   }, [pois])
 

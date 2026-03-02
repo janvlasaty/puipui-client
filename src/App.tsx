@@ -8,8 +8,28 @@ import { CreateProfilePage } from './pages/CreateProfilePage'
 import { SelectProfilePage } from './pages/SelectProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ChatListSkeleton } from './components/ChatListSkeleton'
+import { ToastProvider, useToast } from './contexts/ToastContext'
+
+function AppInner() {
+  const { showToast } = useToast()
+
+  // TODO: remove — demo toast for style tuning
+  useEffect(() => {
+    showToast('Welcome to PuiPui! 👋')
+  }, [])
+
+  return <AppRoutes />
+}
 
 function App() {
+  return (
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
+  )
+}
+
+function AppRoutes() {
   useEffect(() => {
     const interval = setInterval(async () => {
       const registration = await navigator.serviceWorker?.getRegistration()

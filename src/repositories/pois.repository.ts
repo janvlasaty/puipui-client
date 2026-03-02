@@ -7,8 +7,14 @@ export interface MapBounds {
   maxLat: number
 }
 
+export const POIS_REQUEST_LIMIT = 500 // Limit to prevent overload
+
 export const getAllPois = () =>
-  supabase.from('pois').select('*')
+  supabase
+    .from('pois')
+    .select('*')
+    .order("created_at", { ascending: false })
+    .limit(POIS_REQUEST_LIMIT)
 
 export const getPoisInBounds = (bounds: MapBounds) =>
   supabase
@@ -18,3 +24,5 @@ export const getPoisInBounds = (bounds: MapBounds) =>
     .lte('latitude', bounds.maxLat)
     .gte('longitude', bounds.minLng)
     .lte('longitude', bounds.maxLng)
+    .order("created_at", { ascending: false })
+    .limit(POIS_REQUEST_LIMIT)
