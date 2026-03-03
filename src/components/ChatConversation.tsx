@@ -67,7 +67,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto flex flex-col justify-end">
+      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y flex flex-col justify-end">
         <div className="max-w-2xl mx-auto w-full pt-6 pb-4 px-4">
           {messages.map((message) => (
             <ChatBubble
