@@ -132,6 +132,12 @@ export const SettingsPage = () => {
           </form>
         </section>
 
+        <section className="border-t border-border pt-6">
+          <p className="text-xs text-muted-foreground text-center mb-6">
+            Build <span className="font-mono">{import.meta.env.VITE_COMMIT_HASH}</span>
+          </p>
+        </section>
+
         <section className="border-t border-border pt-6 space-y-3">
           <Button
             onClick={() => window.location.reload()}

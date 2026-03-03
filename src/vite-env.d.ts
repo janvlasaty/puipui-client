@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY: string
   readonly VITE_MAPBOX_TOKEN: string
   readonly VITE_MAPBOX_STYLE: string
+  readonly VITE_COMMIT_HASH: string
 }
 
 interface ImportMeta {
