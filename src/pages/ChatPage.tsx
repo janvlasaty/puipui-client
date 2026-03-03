@@ -61,7 +61,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   return (
     <div className="relative h-full overflow-hidden">
       <ChatListPage onSelectFriend={handleSelectFriend} />
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {selectedRoomId && (
           <motion.div
             key={selectedRoomId}

@@ -148,13 +148,19 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({ roomId, onBack }
     )
   }
 
+  const handleDeleteMessage = (id: string) => {
+    setConversationMessages((prev) => prev.filter((m) => m.id !== id))
+  }
+
   return (
     <ChatConversation
+      roomId={roomId}
       friendName={friendName}
       friendAvatar={friendAvatar}
       messages={conversationMessages}
       onBack={onBack}
       onSendMessage={handleSendMessage}
+      onDeleteMessage={handleDeleteMessage}
     />
   )
 }

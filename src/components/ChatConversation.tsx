@@ -19,7 +19,11 @@ interface ChatConversationProps {
   messages: Message[]
   onBack: () => void
   onSendMessage: (message: string) => void
+  onDeleteMessage?: (id: string) => void
+  roomId?: string
 }
+
+const draftKey = (roomId: string) => `puipui_draft_${roomId}`
 
 export const ChatConversation: React.FC<ChatConversationProps> = ({
   friendName,
@@ -27,6 +31,8 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   messages,
   onBack,
   onSendMessage,
+  onDeleteMessage,
+  roomId,
 }) => {
   const [inputMessage, setInputMessage] = React.useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -40,11 +46,31 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
     scrollToBottom()
   }, [messages])
 
+  // Restore draft on mount
+  useEffect(() => {
+    if (!roomId) return
+    const draft = localStorage.getItem(draftKey(roomId))
+    if (draft) {
+      setInputMessage(draft)
+      if (inputRef.current) inputRef.current.innerText = draft
+    }
+  }, [roomId])
+
+  const saveDraft = (text: string) => {
+    if (!roomId) return
+    if (text) {
+      localStorage.setItem(draftKey(roomId), text)
+    } else {
+      localStorage.removeItem(draftKey(roomId))
+    }
+  }
+
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
       onSendMessage(inputMessage.trim())
       setInputMessage('')
       if (inputRef.current) inputRef.current.innerText = ''
+      if (roomId) localStorage.removeItem(draftKey(roomId))
     }
   }
 
@@ -80,6 +106,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
               showTimestamp={message.showTimestamp}
               showSenderName={message.showSenderName}
               senderName={message.senderName}
+              onDelete={onDeleteMessage ? () => onDeleteMessage(message.id) : undefined}
             />
           ))}
           <div ref={messagesEndRef} />
@@ -87,22 +114,26 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
       </div>
 
       <div className="bg-background border-t border-border">
-        <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2">
-            <div className="flex-1 relative">
+        <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2 items-center">
+            <div className="flex-1 relative rounded-[20px] overflow-hidden border border-border bg-background focus-within:ring-2 focus-within:ring-primary">
               <div
                 ref={inputRef}
                 contentEditable
                 suppressContentEditableWarning
                 role="textbox"
                 aria-multiline="false"
-                onInput={(e) => setInputMessage(e.currentTarget.textContent ?? '')}
+                onInput={(e) => {
+                  const text = e.currentTarget.innerText ?? ''
+                  setInputMessage(text)
+                  saveDraft(text)
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
                     handleSendMessage()
                   }
                 }}
-                className="w-full px-4 py-2 rounded-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary leading-normal min-h-[38px]"
+                className="w-full px-4 py-2 bg-transparent focus:outline-none leading-normal min-h-[38px]"
               />
               {!inputMessage && (
                 <span className="absolute inset-0 flex items-center px-4 text-muted-foreground pointer-events-none select-none">
@@ -112,7 +143,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
             </div>
             <button
               onClick={handleSendMessage}
-              className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-50"
               disabled={!inputMessage.trim()}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
