@@ -86,13 +86,18 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
 
       <div className="bg-background border-t border-border">
         <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2">
-            <input
-              type="text"
+            <textarea
+              rows={1}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
               placeholder="Type a message..."
-              className="flex-1 px-4 py-2 rounded-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              inputMode="text"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="sentences"
+              spellCheck={false}
+              className="flex-1 px-4 py-2 rounded-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary resize-none overflow-hidden leading-normal"
             />
             <button
               onClick={handleSendMessage}

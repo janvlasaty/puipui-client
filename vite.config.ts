@@ -5,7 +5,9 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, loadEnv } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const commitHash = process.env.GITHUB_SHA?.slice(0, 7) ?? (() => {
+const commitHash = (() => {
+  const sha = process.env.VITE_COMMIT_HASH || process.env.GITHUB_SHA
+  if (sha) return sha.slice(0, 7)
   try { return execSync('git rev-parse --short HEAD').toString().trim() } catch { return 'dev' }
 })()
 
