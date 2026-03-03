@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Check, User } from 'lucide-react'
+import { ArrowLeft, Check, User, RefreshCw } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../hooks/useAuth'
@@ -132,7 +132,15 @@ export const SettingsPage = () => {
           </form>
         </section>
 
-        <section className="border-t border-border pt-6">
+        <section className="border-t border-border pt-6 space-y-3">
+          <Button
+            onClick={() => window.location.reload()}
+            variant="outline"
+            className="w-full"
+          >
+            <RefreshCw size={14} />
+            Reload app
+          </Button>
           <Button onClick={handleSignOut} variant="destructive" className="w-full">
             Sign out
           </Button>

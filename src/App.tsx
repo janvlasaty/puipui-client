@@ -13,9 +13,22 @@ import { ToastProvider, useToast } from './contexts/ToastContext'
 function AppInner() {
   const { showToast } = useToast()
 
-  // TODO: remove — demo toast for style tuning
   useEffect(() => {
-    showToast('Welcome to PuiPui! 👋')
+    if (!('serviceWorker' in navigator)) return
+
+    // If a controller existed at mount, any future controllerchange is an update
+    const hadController = !!navigator.serviceWorker.controller
+
+    const handleControllerChange = () => {
+      if (!hadController) return
+      showToast('New version available', {
+        duration: 0,
+        action: { label: 'Reload', onClick: () => window.location.reload() },
+      })
+    }
+
+    navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange)
+    return () => navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange)
   }, [])
 
   return <AppRoutes />
