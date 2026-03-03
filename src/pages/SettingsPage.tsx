@@ -62,12 +62,12 @@ export const SettingsPage = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-background"
+      className="h-screen bg-background flex flex-col"
       initial={{ x: '100%' }}
       animate={{ x: isExiting ? '100%' : 0 }}
       transition={slideTransition}
     >
-      <div className="sticky top-0 z-10 bg-background px-4 py-4 border-b border-border">
+      <div className="bg-background px-4 py-4 border-b border-border">
         <div className="max-w-2xl mx-auto w-full flex items-center gap-3">
           <button onClick={handleBack} className="p-1 hover:bg-muted rounded transition-colors">
             <ArrowLeft size={20} />
@@ -76,6 +76,7 @@ export const SettingsPage = () => {
         </div>
       </div>
 
+      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y">
       <div className="px-4 py-6 max-w-sm mx-auto space-y-8">
 
         <section>
@@ -152,6 +153,7 @@ export const SettingsPage = () => {
           </Button>
         </section>
 
+      </div>
       </div>
     </motion.div>
   )

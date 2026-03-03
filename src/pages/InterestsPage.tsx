@@ -176,14 +176,15 @@ export const InterestsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <div className="sticky top-0 bg-background border-b border-border px-4 py-4 z-10">
+    <div className="h-screen bg-background flex flex-col">
+      <div className="bg-background border-b border-border px-4 py-4">
         <div className="max-w-2xl mx-auto w-full flex items-center">
           <h1 className="text-lg font-semibold">Interests</h1>
         </div>
       </div>
 
-      <div className="container mx-auto py-8 px-4">
+      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y">
+      <div className="container mx-auto py-8 px-4 pb-24">
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center">
             <p className="text-muted-foreground">Welcome, {profile?.name} {profile?.surname}!</p>
@@ -270,6 +271,7 @@ export const InterestsPage = () => {
             </Button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )

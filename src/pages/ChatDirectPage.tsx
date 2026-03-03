@@ -113,7 +113,7 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({ roomId, onBack }
   if (loading) {
     return (
       <div className="h-screen bg-background flex flex-col">
-        <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-4">
+        <div className="bg-background border-b border-border px-4 py-4">
           <div className="max-w-2xl mx-auto w-full flex items-center gap-3">
             <div className="w-5 h-5 rounded bg-muted animate-pulse flex-shrink-0" />
             <div className="w-7 h-7 rounded-full bg-muted animate-pulse flex-shrink-0" />
