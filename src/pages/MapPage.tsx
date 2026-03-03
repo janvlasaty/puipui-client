@@ -224,7 +224,7 @@ export const MapPage = () => {
         } else {
           setPoisCache(data || [])
           if (data?.length === POIS_REQUEST_LIMIT) {
-            showToast('Zoom in to see all places.')
+            showToast('Zoom in to see more places... 🫢')
           }
         }
       })

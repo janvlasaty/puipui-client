@@ -7,7 +7,7 @@ export interface MapBounds {
   maxLat: number
 }
 
-export const POIS_REQUEST_LIMIT = 500 // Limit to prevent overload
+export const POIS_REQUEST_LIMIT = 1000 // Limit to prevent overload
 
 export const getAllPois = () =>
   supabase
