@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { PageHeader } from '../components/PageHeader'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { Button } from '@/components/ui/button'
@@ -177,11 +178,7 @@ export const InterestsPage = () => {
 
   return (
     <div className="h-screen bg-background flex flex-col">
-      <div className="bg-background border-b border-border px-4 py-4">
-        <div className="max-w-2xl mx-auto w-full flex items-center">
-          <h1 className="text-lg font-semibold">Interests</h1>
-        </div>
-      </div>
+      <PageHeader title="Interests" />
 
       <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y">
       <div className="container mx-auto py-8 px-4 pb-24">

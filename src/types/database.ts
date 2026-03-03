@@ -39,6 +39,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      books: {
+        Row: {
+          author: string
+          cover_url: string | null
+          created_at: string
+          id: string
+          isbn: string
+          name: string
+        }
+        Insert: {
+          author: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          isbn: string
+          name: string
+        }
+        Update: {
+          author?: string
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          isbn?: string
+          name?: string
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           archived_at: string | null
@@ -274,6 +301,69 @@ export type Database = {
             columns: ["room_id"]
             isOneToOne: false
             referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vibes: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          emoji: string
+          emotion: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          emoji: string
+          emotion?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          emoji?: string
+          emotion?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vibes_books: {
+        Row: {
+          book_id: string
+          id: string
+          vibe_id: string
+        }
+        Insert: {
+          book_id: string
+          id?: string
+          vibe_id: string
+        }
+        Update: {
+          book_id?: string
+          id?: string
+          vibe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vibes_books_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: true
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vibes_books_vibe_id_fkey"
+            columns: ["vibe_id"]
+            isOneToOne: true
+            referencedRelation: "vibes"
             referencedColumns: ["id"]
           },
         ]

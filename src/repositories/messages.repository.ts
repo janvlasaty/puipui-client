@@ -14,8 +14,15 @@ export const getMessagesByRoom = (roomId: string, topicId: string | null = null)
     .eq('room_id', roomId)
     .order('created_at', { ascending: true })
 
-  return topicId === null ? query.is('topic_id', null) : query.eq('topic_id', topicId)
+  const withTopic = topicId === null ? query.is('topic_id', null) : query.eq('topic_id', topicId)
+  return withTopic.is('archived_at', null)
 }
+
+export const archiveMessage = (id: string) =>
+  supabase
+    .from('messages')
+    .delete()
+    .eq('id', id)
 
 export const insertMessage = (roomId: string, userId: string, content: string) =>
   supabase

@@ -1,5 +1,6 @@
-import { ChevronLeft, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import { ChatBubble } from './ChatBubble'
+import { PageHeader } from './PageHeader'
 import { useEffect, useRef } from 'react'
 
 interface Message {
@@ -76,24 +77,20 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
 
   return (
     <div className="h-screen bg-background flex flex-col">
-      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-4">
-        <div className="max-w-2xl mx-auto w-full flex items-center gap-3">
-          <button
-            onClick={onBack}
-            className="p-1 hover:bg-muted rounded transition-colors"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          {friendAvatar ? (
+      <PageHeader
+        sticky
+        onBack={onBack}
+        title={friendName}
+        left={
+          friendAvatar ? (
             <img src={friendAvatar} alt={friendName} className="w-7 h-7 rounded-full object-cover" />
           ) : (
             <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
               <User size={16} className="text-muted-foreground" />
             </div>
-          )}
-          <h1 className="text-lg font-semibold">{friendName}</h1>
-        </div>
-      </div>
+          )
+        }
+      />
 
       <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y flex flex-col justify-end">
         <div className="max-w-2xl mx-auto w-full pt-6 pb-4 px-4">

@@ -37,7 +37,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
           VITE_MAPBOX_TOKEN: ${{ vars.VITE_MAPBOX_TOKEN }}
-          VITE_MAPBOX_STYLE: ${{ vars.VITE_MAPBOX_STYLE }}
+          VITE_MAPBOX_STYLE_LIGHT: ${{ vars.VITE_MAPBOX_STYLE_LIGHT }}
+          VITE_MAPBOX_STYLE_DARK: ${{ vars.VITE_MAPBOX_STYLE_DARK }}
           VITE_COMMIT_HASH: ${{ github.sha }}
         run: npm run build
 

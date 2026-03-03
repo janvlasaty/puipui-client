@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useLocation, useParams } from 'react-router-dom'
+import { useNavigate, useLocation, useParams, useNavigationType } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
@@ -32,6 +32,7 @@ export const HomePage = () => {
   const { profile: _profile } = useProfile()
   const navigate = useNavigate()
   const location = useLocation()
+  const navType = useNavigationType()
   const { roomId } = useParams<{ roomId?: string }>()
   const [activeTab, setActiveTab] = useState<TabType>('chat')
 
@@ -78,7 +79,7 @@ export const HomePage = () => {
             key={roomId}
             className="absolute inset-0 bg-background z-20"
             variants={slideOverVariants}
-            initial="initial"
+            initial={navType === 'POP' ? 'animate' : 'initial'}
             animate="animate"
             exit="exit"
             transition={slideTransition}

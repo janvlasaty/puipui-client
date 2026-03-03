@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Check, User, RefreshCw } from 'lucide-react'
+import { useNavigate, useNavigationType } from 'react-router-dom'
+import { Check, User, RefreshCw, Sun, Moon, Monitor } from 'lucide-react'
+import { PageHeader } from '../components/PageHeader'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { supabase } from '../lib/supabase'
 import { updateProfile } from '../repositories/profiles.repository'
+import { useTheme } from '../contexts/ThemeContext'
 
 const slideTransition = { type: 'spring' as const, stiffness: 300, damping: 32, mass: 0.8 }
 
 export const SettingsPage = () => {
   const navigate = useNavigate()
+  const navType = useNavigationType()
   const { session } = useAuth()
   const { profile, fetchProfile } = useProfile()
+  const { theme, setTheme } = useTheme()
   const [name, setName] = useState('')
   const [surname, setSurname] = useState('')
   const [saving, setSaving] = useState(false)
@@ -63,18 +67,11 @@ export const SettingsPage = () => {
   return (
     <motion.div
       className="h-screen bg-background flex flex-col"
-      initial={{ x: '100%' }}
+      initial={{ x: navType === 'POP' ? 0 : '100%' }}
       animate={{ x: isExiting ? '100%' : 0 }}
       transition={slideTransition}
     >
-      <div className="bg-background px-4 py-4 border-b border-border">
-        <div className="max-w-2xl mx-auto w-full flex items-center gap-3">
-          <button onClick={handleBack} className="p-1 hover:bg-muted rounded transition-colors">
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-lg font-semibold">Settings</h1>
-        </div>
-      </div>
+      <PageHeader title="Settings" onBack={handleBack} />
 
       <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y">
       <div className="px-4 py-6 max-w-sm mx-auto space-y-8">
@@ -131,6 +128,33 @@ export const SettingsPage = () => {
               )}
             </div>
           </form>
+        </section>
+
+        <section className="border-t border-border pt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Sun size={14} className="text-muted-foreground" />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Appearance</h2>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { value: 'light', label: 'Light', icon: Sun },
+              { value: 'dark',  label: 'Dark',  icon: Moon },
+              { value: 'system', label: 'System', icon: Monitor },
+            ] as { value: ReturnType<typeof useTheme>['theme'], label: string, icon: React.ElementType }[]).map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                onClick={() => setTheme(value)}
+                className={`flex flex-col items-center gap-1.5 py-3 rounded-lg border text-sm transition-colors ${
+                  theme === value
+                    ? 'border-primary bg-primary/10 text-primary font-medium'
+                    : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                <Icon size={16} />
+                {label}
+              </button>
+            ))}
+          </div>
         </section>
 
         <section className="border-t border-border pt-6">

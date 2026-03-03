@@ -12,7 +12,7 @@ export const ChatListSkeleton = () => (
     {/* Header */}
     <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-4">
       <div className="max-w-2xl mx-auto w-full flex items-center justify-between">
-        <div className="h-6 w-28 rounded bg-muted animate-pulse" />
+        <div className="h-7 w-28 rounded bg-muted animate-pulse" />
         <div className="w-5 h-5 rounded bg-muted animate-pulse" />
       </div>
     </div>

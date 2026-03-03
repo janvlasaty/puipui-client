@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ChatConversation } from '../components/ChatConversation'
 import { useAuth } from '../hooks/useAuth'
-import { getMessagesByRoom, insertMessage } from '../repositories/messages.repository'
+import { getMessagesByRoom, insertMessage, archiveMessage } from '../repositories/messages.repository'
 import { getRoomUsersWithProfiles } from '../repositories/rooms.repository'
 
 interface Message {
@@ -148,8 +148,9 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({ roomId, onBack }
     )
   }
 
-  const handleDeleteMessage = (id: string) => {
+  const handleDeleteMessage = async (id: string) => {
     setConversationMessages((prev) => prev.filter((m) => m.id !== id))
+    await archiveMessage(id)
   }
 
   return (

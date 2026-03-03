@@ -9,6 +9,7 @@ import { SelectProfilePage } from './pages/SelectProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
 import { ChatListSkeleton } from './components/ChatListSkeleton'
 import { ToastProvider, useToast } from './contexts/ToastContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function AppInner() {
   const { showToast } = useToast()
@@ -36,9 +37,11 @@ function AppInner() {
 
 function App() {
   return (
-    <ToastProvider>
-      <AppInner />
-    </ToastProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <AppInner />
+      </ToastProvider>
+    </ThemeProvider>
   )
 }
 
