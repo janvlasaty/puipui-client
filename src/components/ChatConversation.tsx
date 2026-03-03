@@ -30,6 +30,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
 }) => {
   const [inputMessage, setInputMessage] = React.useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -41,8 +42,9 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
 
   const handleSendMessage = () => {
     if (inputMessage.trim()) {
-      onSendMessage(inputMessage)
+      onSendMessage(inputMessage.trim())
       setInputMessage('')
+      if (inputRef.current) inputRef.current.innerText = ''
     }
   }
 
@@ -86,19 +88,28 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
 
       <div className="bg-background border-t border-border">
         <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2">
-            <textarea
-              rows={1}
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
-              placeholder="Type a message..."
-              inputMode="text"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="sentences"
-              spellCheck={false}
-              className="flex-1 px-4 py-2 rounded-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary resize-none overflow-hidden leading-normal"
-            />
+            <div className="flex-1 relative">
+              <div
+                ref={inputRef}
+                contentEditable
+                suppressContentEditableWarning
+                role="textbox"
+                aria-multiline="false"
+                onInput={(e) => setInputMessage(e.currentTarget.textContent ?? '')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSendMessage()
+                  }
+                }}
+                className="w-full px-4 py-2 rounded-full border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary leading-normal min-h-[38px]"
+              />
+              {!inputMessage && (
+                <span className="absolute inset-0 flex items-center px-4 text-muted-foreground pointer-events-none select-none">
+                  Type a message...
+                </span>
+              )}
+            </div>
             <button
               onClick={handleSendMessage}
               className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white hover:opacity-90 transition-opacity disabled:opacity-50"
