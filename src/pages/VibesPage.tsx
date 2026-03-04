@@ -4,7 +4,7 @@ import { PageHeader, HeaderButton } from '../components/PageHeader'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { supabase } from '../lib/supabase'
-import { X, Loader2, BookOpen, Plus, Film, Tv, Drama, Landmark, Pencil, Trash2, Check, FilterIcon, Filter } from 'lucide-react'
+import { X, Loader2, BookOpen, Plus, Film, Tv, Drama, Landmark, Pencil, Trash2, Check, Filter } from 'lucide-react'
 
 // ─── Interfaces (book search) ────────────────────────────────────────────────
 
