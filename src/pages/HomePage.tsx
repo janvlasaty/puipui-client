@@ -6,13 +6,13 @@ import { useProfile } from '../hooks/useProfile'
 import { ChatListPage } from './ChatListPage'
 import { ChatDirectPage } from './ChatDirectPage'
 import { MapPage } from './MapPage'
-import { InterestsPage } from './InterestsPage'
+import { VibesPage } from './VibesPage'
 import { BottomNavigation } from '../components/BottomNavigation'
 import type { Friend } from '../components/FriendsList'
 
 const LAST_TAB_KEY = 'puipui_last_tab'
 
-type TabType = 'chat' | 'map' | 'interests'
+type TabType = 'chat' | 'map' | 'vibes'
 
 const slideOverVariants = {
   initial: { x: '100%' },
@@ -40,12 +40,12 @@ export const HomePage = () => {
     const pathSegments = location.pathname.split('/')
     const urlTab = pathSegments[1]
 
-    if (urlTab === 'chat' || urlTab === 'map' || urlTab === 'interests') {
+    if (urlTab === 'chat' || urlTab === 'map' || urlTab === 'vibes') {
       setActiveTab(urlTab as TabType)
       localStorage.setItem(LAST_TAB_KEY, urlTab)
     } else {
       const savedTab = localStorage.getItem(LAST_TAB_KEY) as TabType | null
-      const tabToUse = (savedTab === 'chat' || savedTab === 'map' || savedTab === 'interests')
+      const tabToUse = (savedTab === 'chat' || savedTab === 'map' || savedTab === 'vibes')
         ? savedTab
         : 'chat'
       setActiveTab(tabToUse)
@@ -71,7 +71,7 @@ export const HomePage = () => {
     <div className="relative min-h-screen bg-background overflow-hidden">
       {activeTab === 'chat' && <ChatListPage onSelectFriend={handleSelectFriend} />}
       {activeTab === 'map' && <MapPage />}
-      {activeTab === 'interests' && <InterestsPage />}
+      {activeTab === 'vibes' && <VibesPage />}
 
       <AnimatePresence>
         {activeTab === 'chat' && roomId && (

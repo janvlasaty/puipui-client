@@ -7,7 +7,8 @@ import { getPoisInBounds, POIS_REQUEST_LIMIT } from '../repositories/pois.reposi
 import { useToast } from '../contexts/ToastContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
-import { X, Plus, Crosshair } from 'lucide-react'
+import { PageHeader, HeaderButton } from '../components/PageHeader'
+import { X, Plus, Filter, Navigation } from 'lucide-react'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 const MAP_STYLE_LIGHT = import.meta.env.VITE_MAPBOX_STYLE_LIGHT
@@ -59,6 +60,8 @@ export const MapPage = () => {
   const mapReady = useRef(false)
 
   // Stable refs to avoid stale closures inside addLayersAndHandlers
+  const isDarkRef = useRef(isDark)
+  isDarkRef.current = isDark
   const fetchPoiDataRef = useRef<() => void>(() => {})
   const poisCacheRef = useRef(poisCache)
   poisCacheRef.current = poisCache
@@ -110,9 +113,11 @@ export const MapPage = () => {
     const m = map.current
     if (!m) return
 
+    const dark = isDarkRef.current
+    const markerStroke = dark ? '#111827' : '#ffffff'
     const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
-      <path d="M14 1C7.373 1 2 6.373 2 13c0 8.5 12 22 12 22S26 21.5 26 13C26 6.373 20.627 1 14 1z" fill="#fbbf24" stroke="#ffffff" stroke-width="2.5"/>
-      <circle cx="14" cy="13" r="5" fill="#ffffff"/>
+      <path d="M14 1C7.373 1 2 6.373 2 13c0 8.5 12 22 12 22S26 21.5 26 13C26 6.373 20.627 1 14 1z" fill="#fbbf24" stroke="${markerStroke}" stroke-width="2.5"/>
+      <circle cx="14" cy="13" r="5" fill="${markerStroke}"/>
     </svg>`
 
     const markerImg = new Image(28, 36)
@@ -139,7 +144,7 @@ export const MapPage = () => {
           'circle-color': '#fbbf24',
           'circle-radius': ['step', ['get', 'point_count'], 18, 10, 24, 50, 30],
           'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff',
+          'circle-stroke-color': dark ? '#111827' : '#ffffff',
         },
       })
 
@@ -151,10 +156,12 @@ export const MapPage = () => {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-size': 12,
-          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': dark ? 13 : 12,
+          'text-font': dark
+            ? ['DIN Offc Pro Bold', 'Arial Unicode MS Bold']
+            : ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
         },
-        paint: { 'text-color': '#ffffff' },
+        paint: { 'text-color': dark ? '#111827' : '#ffffff' },
       })
 
       // Individual points as pin markers
@@ -354,29 +361,27 @@ export const MapPage = () => {
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full z-0" />
 
-      {/* Header */}
-      <div className="fixed top-0 left-0 right-0 z-10 bg-background/90 backdrop-blur-sm border-b border-border px-4 py-4">
-        <div className="max-w-2xl mx-auto w-full flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Map</h1>
-          {!isCreatingPoi && (
-            <div className="flex gap-1">
-              <button
-                onClick={handleCreateNew}
-                className="p-1 hover:bg-muted rounded transition-colors"
-              >
+      <PageHeader
+        left={
+          !isCreatingPoi && (
+            <HeaderButton>
+              <Filter size={20} />
+            </HeaderButton>
+          )
+        }
+        right={
+          !isCreatingPoi && (
+            <div className="flex gap-2">
+              <HeaderButton onClick={handleLocateMe} disabled={isLocating} className="md:hidden">
+                <Navigation size={20} />
+              </HeaderButton>
+              <HeaderButton onClick={handleCreateNew} variant="primary">
                 <Plus size={20} />
-              </button>
-              <button
-                onClick={handleLocateMe}
-                disabled={isLocating}
-                className="p-1 hover:bg-muted rounded transition-colors disabled:opacity-50"
-              >
-                <Crosshair size={20} />
-              </button>
+              </HeaderButton>
             </div>
-          )}
-        </div>
-      </div>
+          )
+        }
+      />
 
       {poisCache.error && (
         <div className="fixed bottom-24 left-4 right-4 z-10 bg-destructive/10 border border-destructive rounded-lg p-4">

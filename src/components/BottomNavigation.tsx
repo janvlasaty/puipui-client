@@ -2,20 +2,20 @@ import { MessageCircle, Map, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 interface BottomNavigationProps {
-  activeTab: 'chat' | 'map' | 'interests'
-  onTabChange: (tab: 'chat' | 'map' | 'interests') => void
+  activeTab: 'chat' | 'map' | 'vibes'
+  onTabChange: (tab: 'chat' | 'map' | 'vibes') => void
 }
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
     { id: 'chat', label: 'Chat', icon: MessageCircle },
     { id: 'map', label: 'Map', icon: Map },
-    { id: 'interests', label: 'Interests', icon: Star },
+    { id: 'vibes', label: 'Vibes', icon: Star },
   ] as const
 
   return (
     <div className="fixed bottom-0 left-0 right-0 flex items-center justify-center pointer-events-none">
-      <div className="mb-8 pointer-events-auto bg-card rounded-full shadow-lg border border-border/50 backdrop-blur-sm px-1 py-1 flex gap-2">
+      <div className="mb-8 pointer-events-auto bg-background/70 backdrop-blur-sm rounded-full shadow-lg border border-border/50 px-1 py-1 flex gap-2">
         {tabs.map((tab) => {
           const Icon = tab.icon
           return (

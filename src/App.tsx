@@ -102,7 +102,7 @@ function AppRoutes() {
         <Route path="/chat/:roomId" element={<HomePage />} />
         <Route path="/chat" element={<HomePage />} />
         <Route path="/map" element={<HomePage />} />
-        <Route path="/interests" element={<HomePage />} />
+        <Route path="/vibes" element={<HomePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/" element={<Navigate to="/chat" replace />} />
       </Routes>

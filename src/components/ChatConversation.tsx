@@ -78,21 +78,22 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   return (
     <div className="h-screen bg-background flex flex-col">
       <PageHeader
-        sticky
         onBack={onBack}
-        title={friendName}
-        left={
-          friendAvatar ? (
-            <img src={friendAvatar} alt={friendName} className="w-7 h-7 rounded-full object-cover" />
-          ) : (
-            <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-              <User size={16} className="text-muted-foreground" />
-            </div>
-          )
+        title={
+          <div className="flex items-center gap-2 px-3 py-1 bg-background/70 backdrop-blur-sm rounded-full border border-border/50">
+            {friendAvatar ? (
+              <img src={friendAvatar} alt={friendName} className="w-5 h-5 rounded-full object-cover" />
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                <User size={12} className="text-muted-foreground" />
+              </div>
+            )}
+            <span className="text-sm font-semibold">{friendName}</span>
+          </div>
         }
       />
 
-      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y flex flex-col justify-end">
+      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y flex flex-col justify-end pt-16">
         <div className="max-w-2xl mx-auto w-full pt-6 pb-4 px-4">
           {messages.map((message) => (
             <ChatBubble

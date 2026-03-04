@@ -73,7 +73,7 @@ export const SettingsPage = () => {
     >
       <PageHeader title="Settings" onBack={handleBack} />
 
-      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y">
+      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y pt-16">
       <div className="px-4 py-6 max-w-sm mx-auto space-y-8">
 
         <section>

@@ -1,5 +1,6 @@
 import { MessageCircle, Settings, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { PageHeader, HeaderButton } from './PageHeader'
 
 export interface Friend {
   id: string
@@ -19,17 +20,16 @@ export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFrien
   const navigate = useNavigate()
 
   return (
-    <div className="h-screen bg-background flex flex-col">
-      <div className="bg-background border-b border-border px-4 py-4">
-        <div className="max-w-2xl mx-auto w-full flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Messages</h1>
-          <button onClick={() => navigate('/settings')} className="p-1 hover:bg-muted rounded transition-colors">
+    <div className="h-screen bg-background">
+      <PageHeader
+        right={
+          <HeaderButton onClick={() => navigate('/settings')}>
             <Settings size={20} />
-          </button>
-        </div>
-      </div>
+          </HeaderButton>
+        }
+      />
 
-      <div className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y pb-24">
+      <div className="h-full overflow-y-scroll overscroll-contain touch-pan-y pt-16 pb-24">
         <div className="max-w-2xl mx-auto w-full">
           {friends.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
