@@ -164,6 +164,7 @@ export type Database = {
       }
       pois: {
         Row: {
+          category: Database["public"]["Enums"]["type_poi_category"]
           created_at: string
           id: string
           label: string
@@ -171,6 +172,7 @@ export type Database = {
           longitude: number
         }
         Insert: {
+          category?: Database["public"]["Enums"]["type_poi_category"]
           created_at?: string
           id?: string
           label: string
@@ -178,6 +180,7 @@ export type Database = {
           longitude: number
         }
         Update: {
+          category?: Database["public"]["Enums"]["type_poi_category"]
           created_at?: string
           id?: string
           label?: string
@@ -272,6 +275,24 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          tag: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tag: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tag?: string
+        }
+        Relationships: []
       }
       topics: {
         Row: {
@@ -376,7 +397,7 @@ export type Database = {
       get_user_in_room: { Args: { p_room_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      type_poi_category: "Coffee" | "Food" | "Drink" | "Bakery" | "Stay" | "Gem"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -506,6 +527,8 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      type_poi_category: ["Coffee", "Food", "Drink", "Bakery", "Stay", "Gem"],
+    },
   },
 } as const

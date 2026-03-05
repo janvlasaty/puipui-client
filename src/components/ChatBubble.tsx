@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Reply, Smile, Trash2 } from 'lucide-react'
+import { ArrowBendUpLeftIcon, SmileyIcon, TrashIcon } from '@phosphor-icons/react'
 
 interface ChatBubbleProps {
   message: string
@@ -86,7 +86,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={() => handleAction(onReply)}
                   >
-                    <Reply size={16} />
+                    <ArrowBendUpLeftIcon size={16} />
                     <span className="text-[10px] text-muted-foreground">Reply</span>
                   </button>
                   <button
@@ -94,7 +94,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={() => handleAction(onReact)}
                   >
-                    <Smile size={16} />
+                    <SmileyIcon size={16} />
                     <span className="text-[10px] text-muted-foreground">Emotion</span>
                   </button>
                   <button
@@ -102,7 +102,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
                     onPointerDown={(e) => e.stopPropagation()}
                     onClick={() => handleAction(onDelete)}
                   >
-                    <Trash2 size={16} />
+                    <TrashIcon size={16} />
                     <span className="text-[10px]">Delete</span>
                   </button>
                 </div>

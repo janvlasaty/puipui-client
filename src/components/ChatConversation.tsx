@@ -1,4 +1,4 @@
-import { User } from 'lucide-react'
+import { UserIcon } from '@phosphor-icons/react'
 import { ChatBubble } from './ChatBubble'
 import { PageHeader } from './PageHeader'
 import { useEffect, useRef } from 'react'
@@ -85,7 +85,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
               <img src={friendAvatar} alt={friendName} className="w-5 h-5 rounded-full object-cover" />
             ) : (
               <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                <User size={12} className="text-muted-foreground" />
+                <UserIcon size={12} className="text-muted-foreground" />
               </div>
             )}
             <span className="text-sm font-semibold">{friendName}</span>

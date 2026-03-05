@@ -8,7 +8,13 @@ import { useToast } from '../contexts/ToastContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
 import { PageHeader, HeaderButton } from '../components/PageHeader'
-import { X, Plus, Filter, Navigation } from 'lucide-react'
+import { PlusIcon, FunnelIcon, NavigationArrowIcon } from '@phosphor-icons/react'
+import { AnimatePresence } from 'framer-motion'
+import { VibeFilterPopup } from '../components/vibes/VibeFilterPopup'
+import { MAP_CATEGORIES, makeCategoryMarkerSvg } from '../components/map/mapCategories'
+import { PoiPopup } from '../components/map/PoiPopup'
+
+const ALL_CATEGORY_IDS = MAP_CATEGORIES.map((c) => c.id)
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 const MAP_STYLE_LIGHT = import.meta.env.VITE_MAPBOX_STYLE_LIGHT
@@ -52,6 +58,17 @@ export const MapPage = () => {
   const [selectedPoiId, setSelectedPoiId] = useState<string | null>(null)
   const [isCreatingPoi, setIsCreatingPoi] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
+  const [showFilter, setShowFilter] = useState(false)
+  const [activeCategories, setActiveCategories] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('map-filter')
+      if (stored) return JSON.parse(stored)
+    } catch {}
+    return ALL_CATEGORY_IDS
+  })
+  const isFiltered = ALL_CATEGORY_IDS.some((id) => !activeCategories.includes(id))
+  const toggleCategory = (id: string) =>
+    setActiveCategories((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
 
   // Refs
   const mapContainer = useRef<HTMLDivElement | null>(null)
@@ -70,11 +87,17 @@ export const MapPage = () => {
   const poisRef = useRef<typeof poisCache.data>([])
   const pois = poisCache.data || []
   poisRef.current = pois
+  const activeCategoriesRef = useRef<string[]>([])
+  activeCategoriesRef.current = activeCategories
 
   // Persist map state to localStorage
   useEffect(() => {
     localStorage.setItem('mapState', JSON.stringify(mapState))
   }, [mapState])
+
+  useEffect(() => {
+    localStorage.setItem('map-filter', JSON.stringify(activeCategories))
+  }, [activeCategories])
 
   // Fetch POIs based on map bounds
   const fetchPoiData = useCallback(() => {
@@ -114,24 +137,43 @@ export const MapPage = () => {
     if (!m) return
 
     const dark = isDarkRef.current
-    const markerStroke = dark ? '#111827' : '#ffffff'
-    const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
-      <path d="M14 1C7.373 1 2 6.373 2 13c0 8.5 12 22 12 22S26 21.5 26 13C26 6.373 20.627 1 14 1z" fill="#fbbf24" stroke="${markerStroke}" stroke-width="2.5"/>
-      <circle cx="14" cy="13" r="5" fill="${markerStroke}"/>
-    </svg>`
 
-    const markerImg = new Image(28, 36)
-    markerImg.onload = () => {
+    const imageLoads = MAP_CATEGORIES.map((cat) =>
+      new Promise<void>((resolve) => {
+        const img = new Image(56, 72)
+        img.onload = () => {
+          if (map.current) map.current.addImage(`poi-marker-${cat.id}`, img, { pixelRatio: 2 })
+          resolve()
+        }
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(makeCategoryMarkerSvg(cat))
+      })
+    )
+
+    Promise.all(imageLoads).then(() => {
       if (!map.current) return
 
-      map.current.addImage('poi-marker', markerImg)
+      // Dimmed (filtered-out) POIs — grey dots, no clustering, rendered below active layer
+      map.current.addSource('pois-dim', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      })
+      map.current.addLayer({
+        id: 'pois-dim-layer',
+        type: 'circle',
+        source: 'pois-dim',
+        paint: {
+          'circle-radius': 3,
+          'circle-color': '#9CA3AF',
+          'circle-opacity': 0.5,
+        },
+      })
 
       map.current.addSource('pois', {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
         cluster: true,
         clusterMaxZoom: 14,
-        clusterRadius: 50,
+        clusterRadius: 35,
       })
 
       // Cluster circles
@@ -156,10 +198,8 @@ export const MapPage = () => {
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '{point_count_abbreviated}',
-          'text-size': dark ? 13 : 12,
-          'text-font': dark
-            ? ['DIN Offc Pro Bold', 'Arial Unicode MS Bold']
-            : ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 16,
+          'text-font': ['DIN Offc Pro Bold', 'Arial Unicode MS Bold'],
         },
         paint: { 'text-color': dark ? '#111827' : '#ffffff' },
       })
@@ -171,7 +211,11 @@ export const MapPage = () => {
         source: 'pois',
         filter: ['!', ['has', 'point_count']],
         layout: {
-          'icon-image': 'poi-marker',
+          'icon-image': [
+            'match', ['get', 'category'],
+            ...MAP_CATEGORIES.flatMap((cat) => [cat.id, `poi-marker-${cat.id}`]),
+            `poi-marker-${MAP_CATEGORIES[0].id}`,
+          ],
           'icon-size': 1,
           'icon-anchor': 'bottom',
           'icon-allow-overlap': true,
@@ -212,13 +256,27 @@ export const MapPage = () => {
 
       // Repopulate with already-loaded POIs (important after a style change)
       if (poisRef.current?.length) {
+        const active = new Set(activeCategoriesRef.current)
+        const activePois = poisRef.current.filter((p) => active.has(p.category))
+        const dimPois = poisRef.current.filter((p) => !active.has(p.category))
+
         const source = map.current.getSource('pois') as mapboxgl.GeoJSONSource
         source.setData({
           type: 'FeatureCollection',
-          features: (poisRef.current || []).map((poi) => ({
+          features: activePois.map((poi) => ({
             type: 'Feature' as const,
             geometry: { type: 'Point' as const, coordinates: [poi.longitude, poi.latitude] },
-            properties: { id: poi.id, label: poi.label },
+            properties: { id: poi.id, label: poi.label, category: poi.category },
+          })),
+        })
+
+        const dimSource = map.current.getSource('pois-dim') as mapboxgl.GeoJSONSource
+        dimSource.setData({
+          type: 'FeatureCollection',
+          features: dimPois.map((poi) => ({
+            type: 'Feature' as const,
+            geometry: { type: 'Point' as const, coordinates: [poi.longitude, poi.latitude] },
+            properties: { id: poi.id },
           })),
         })
       }
@@ -228,8 +286,7 @@ export const MapPage = () => {
       if (!cache.data || isCacheStaleRef.current(cache.lastFetched)) {
         fetchPoiDataRef.current()
       }
-    }
-    markerImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(markerSvg)
+    })
   }, [])
 
   // Initialize map (once)
@@ -299,20 +356,34 @@ export const MapPage = () => {
     map.current.once('style.load', addLayersAndHandlers)
   }, [isDark, addLayersAndHandlers])
 
-  // Sync POIs to GeoJSON source
+  // Sync POIs to GeoJSON sources, split by active filter categories
   useEffect(() => {
     const source = map.current?.getSource('pois') as mapboxgl.GeoJSONSource | undefined
-    if (!source) return
+    const dimSource = map.current?.getSource('pois-dim') as mapboxgl.GeoJSONSource | undefined
+    if (!source || !dimSource) return
+
+    const active = new Set(activeCategories)
+    const activePois = pois.filter((poi) => active.has(poi.category))
+    const dimPois = pois.filter((poi) => !active.has(poi.category))
 
     source.setData({
       type: 'FeatureCollection',
-      features: pois.map((poi) => ({
+      features: activePois.map((poi) => ({
         type: 'Feature' as const,
         geometry: { type: 'Point' as const, coordinates: [poi.longitude, poi.latitude] },
-        properties: { id: poi.id, label: poi.label },
+        properties: { id: poi.id, label: poi.label, category: poi.category },
       })),
     })
-  }, [pois])
+
+    dimSource.setData({
+      type: 'FeatureCollection',
+      features: dimPois.map((poi) => ({
+        type: 'Feature' as const,
+        geometry: { type: 'Point' as const, coordinates: [poi.longitude, poi.latitude] },
+        properties: { id: poi.id },
+      })),
+    })
+  }, [pois, activeCategories])
 
   // Handle create new POI
   const handleCreateNew = () => {
@@ -364,19 +435,24 @@ export const MapPage = () => {
       <PageHeader
         left={
           !isCreatingPoi && (
-            <HeaderButton>
-              <Filter size={20} />
-            </HeaderButton>
+            <div className="relative">
+              <HeaderButton variant="default" onClick={() => setShowFilter((p) => !p)}>
+                <FunnelIcon size={20} />
+              </HeaderButton>
+              {isFiltered && (
+                <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-primary pointer-events-none" />
+              )}
+            </div>
           )
         }
         right={
           !isCreatingPoi && (
             <div className="flex gap-2">
               <HeaderButton onClick={handleLocateMe} disabled={isLocating} className="md:hidden">
-                <Navigation size={20} />
+                <NavigationArrowIcon size={20} />
               </HeaderButton>
               <HeaderButton onClick={handleCreateNew} variant="primary">
-                <Plus size={20} />
+                <PlusIcon size={20} />
               </HeaderButton>
             </div>
           )
@@ -389,23 +465,12 @@ export const MapPage = () => {
         </div>
       )}
 
-      {/* Selected POI Details */}
-      {selectedPoiId && selectedPoi && (
-        <div className="fixed top-16 left-4 right-4 z-10 max-w-md bg-card rounded-lg border border-border p-4 shadow-lg">
-          <div className="flex justify-between items-start gap-2 mb-2">
-            <h2 className="text-lg font-bold">{selectedPoi.label}</h2>
-            <button
-              onClick={() => setSelectedPoiId(null)}
-              className="p-1 hover:bg-muted rounded transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {selectedPoi.latitude.toFixed(4)}, {selectedPoi.longitude.toFixed(4)}
-          </p>
-        </div>
-      )}
+      {/* Selected POI Popup */}
+      <AnimatePresence>
+        {selectedPoiId && selectedPoi && (
+          <PoiPopup poi={selectedPoi} onClose={() => setSelectedPoiId(null)} />
+        )}
+      </AnimatePresence>
 
       {/* Center Crosshair - Fixed when creating POI */}
       {isCreatingPoi && (
@@ -415,6 +480,18 @@ export const MapPage = () => {
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {showFilter && (
+          <VibeFilterPopup
+            categories={MAP_CATEGORIES}
+            activeIds={activeCategories}
+            onToggle={toggleCategory}
+            onSelectAll={() => setActiveCategories(ALL_CATEGORY_IDS)}
+            onClose={() => setShowFilter(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Create POI confirm/cancel */}
       {isCreatingPoi && (

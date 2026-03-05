@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useNavigationType } from 'react-router-dom'
-import { Check, User, RefreshCw, Sun, Moon, Monitor } from 'lucide-react'
+import { CheckIcon, UserIcon, ArrowClockwiseIcon, SunIcon, MoonIcon, MonitorIcon } from '@phosphor-icons/react'
 import { PageHeader } from '../components/PageHeader'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -78,7 +78,7 @@ export const SettingsPage = () => {
 
         <section>
           <div className="flex items-center gap-2 mb-4">
-            <User size={14} className="text-muted-foreground" />
+            <UserIcon size={14} className="text-muted-foreground" />
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Profile</h2>
           </div>
 
@@ -123,7 +123,7 @@ export const SettingsPage = () => {
               </Button>
               {saved && !isDirty && (
                 <span className="flex items-center gap-1 text-sm text-green-600 shrink-0">
-                  <Check size={14} /> Saved
+                  <CheckIcon size={14} /> Saved
                 </span>
               )}
             </div>
@@ -132,14 +132,14 @@ export const SettingsPage = () => {
 
         <section className="border-t border-border pt-6">
           <div className="flex items-center gap-2 mb-4">
-            <Sun size={14} className="text-muted-foreground" />
+            <SunIcon size={14} className="text-muted-foreground" />
             <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Appearance</h2>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {([
-              { value: 'light', label: 'Light', icon: Sun },
-              { value: 'dark',  label: 'Dark',  icon: Moon },
-              { value: 'system', label: 'System', icon: Monitor },
+              { value: 'light', label: 'Light', icon: SunIcon },
+              { value: 'dark',  label: 'Dark',  icon: MoonIcon },
+              { value: 'system', label: 'System', icon: MonitorIcon },
             ] as { value: ReturnType<typeof useTheme>['theme'], label: string, icon: React.ElementType }[]).map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
@@ -169,7 +169,7 @@ export const SettingsPage = () => {
             variant="outline"
             className="w-full"
           >
-            <RefreshCw size={14} />
+            <ArrowClockwiseIcon size={14} />
             Reload app
           </Button>
           <Button onClick={handleSignOut} variant="destructive" className="w-full">

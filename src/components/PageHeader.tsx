@@ -1,4 +1,4 @@
-import { ChevronLeft } from 'lucide-react'
+import { CaretLeftIcon } from '@phosphor-icons/react'
 
 interface HeaderButtonProps {
   onClick?: () => void
@@ -36,7 +36,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, onBack, left, rig
         <div className="flex items-center gap-1">
           {onBack && (
             <HeaderButton onClick={onBack}>
-              <ChevronLeft size={20} />
+              <CaretLeftIcon size={20} />
             </HeaderButton>
           )}
           {left}

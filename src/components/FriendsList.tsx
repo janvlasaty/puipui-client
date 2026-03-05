@@ -1,4 +1,4 @@
-import { MessageCircle, Settings, User } from 'lucide-react'
+import { ChatCircleIcon, GearIcon, UserIcon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
 import { PageHeader, HeaderButton } from './PageHeader'
 
@@ -24,7 +24,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFrien
       <PageHeader
         right={
           <HeaderButton onClick={() => navigate('/settings')}>
-            <Settings size={20} />
+            <GearIcon size={20} />
           </HeaderButton>
         }
       />
@@ -33,7 +33,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFrien
         <div className="max-w-2xl mx-auto w-full">
           {friends.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <MessageCircle size={48} className="text-muted-foreground mb-4 opacity-50" />
+              <ChatCircleIcon size={48} className="text-muted-foreground mb-4 opacity-50" />
               <p className="text-muted-foreground mb-2">No conversations yet</p>
               <p className="text-sm text-muted-foreground">Start a new conversation with a friend</p>
             </div>
@@ -53,7 +53,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFrien
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                      <User size={22} className="text-muted-foreground" />
+                      <UserIcon size={22} className="text-muted-foreground" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">

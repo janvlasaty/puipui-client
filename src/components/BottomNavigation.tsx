@@ -1,4 +1,4 @@
-import { MessageCircle, Map, Star } from 'lucide-react'
+import { ChatCircleIcon, MapTrifoldIcon, StarIcon } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 
 interface BottomNavigationProps {
@@ -8,9 +8,9 @@ interface BottomNavigationProps {
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
-    { id: 'chat', label: 'Chat', icon: MessageCircle },
-    { id: 'map', label: 'Map', icon: Map },
-    { id: 'vibes', label: 'Vibes', icon: Star },
+    { id: 'chat', label: 'Chat', icon: ChatCircleIcon },
+    { id: 'map', label: 'Map', icon: MapTrifoldIcon },
+    { id: 'vibes', label: 'Vibes', icon: StarIcon },
   ] as const
 
   return (
@@ -35,7 +35,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, o
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}
-              <Icon size={20} className="relative z-10 fill-current" strokeWidth={1.5} />
+              <Icon size={20} weight="fill" className="relative z-10" />
               <span className="relative z-10 text-xs font-semibold">{tab.label}</span>
             </button>
           )
