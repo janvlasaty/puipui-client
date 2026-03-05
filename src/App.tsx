@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { useProfile } from './hooks/useProfile'
-import { AuthPage } from './pages/AuthPage'
+import { LandingPage } from './pages/LandingPage'
 import { HomePage } from './pages/HomePage'
 import { CreateProfilePage } from './pages/CreateProfilePage'
 import { SelectProfilePage } from './pages/SelectProfilePage'
@@ -85,7 +85,7 @@ function AppRoutes() {
   }
 
   if (!session) {
-    return <AuthPage />
+    return <LandingPage />
   }
 
   if (showProfileSelection && hasMultipleProfiles) {

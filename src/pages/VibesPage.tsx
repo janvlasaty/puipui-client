@@ -155,8 +155,19 @@ export const VibesPage = () => {
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
               Me vibing
             </h2>
-            <div className="grid grid-cols-2 gap-2">
-              {(showAllReviews ? filteredMy : filteredMy.slice(0, 4)).map((v) => <VibeItem key={v.id} {...v} onClick={() => setActiveVibe(v)} />)}
+            <div className="overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden -mx-4 pl-4 snap-x snap-mandatory scroll-pl-4" style={{ scrollbarWidth: 'none' } as React.CSSProperties}>
+              <div className="flex gap-2 pr-4">
+                {(showAllReviews ? filteredMy : filteredMy.slice(0, 4)).length > 0 ? Array.from(
+                  { length: Math.ceil((showAllReviews ? filteredMy : filteredMy.slice(0, 4)).length / 2) },
+                  (_, i) => (showAllReviews ? filteredMy : filteredMy.slice(0, 4)).slice(i * 2, i * 2 + 2)
+                ).map((col, ci) => (
+                  <div key={ci} className="flex flex-col gap-2 shrink-0 snap-start" style={{ width: colWidth }}>
+                    {col.map((v) => (
+                      <VibeItem key={v.id} {...v} onClick={() => setActiveVibe(v)} />
+                    ))}
+                  </div>
+                )) : null}
+              </div>
             </div>
             {filteredMy.length === 0 && (
               <p className="text-sm text-muted-foreground py-2">No vibes match the active filters.</p>
@@ -176,7 +187,7 @@ export const VibesPage = () => {
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
               Browse categories
             </h2>
-            <div className="flex gap-4 overflow-x-auto scrollbar-none pb-1 -mx-4 px-4">
+            <div className="flex gap-4 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden -mx-4 px-4" style={{ scrollbarWidth: 'none' } as React.CSSProperties}>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}

@@ -32,6 +32,18 @@ interface PageHeaderProps {
 export const PageHeader: React.FC<PageHeaderProps> = ({ title, onBack, left, right }) => {
   return (
     <div className="fixed top-0 left-0 right-0 z-10 px-4 py-4">
+      <div
+        className="absolute inset-x-0 top-0 pointer-events-none"
+        style={{
+          height: '80px',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+          maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+          background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 100%)',
+          zIndex: -1,
+        }}
+      />
       <div className="max-w-2xl mx-auto w-full flex items-center relative min-h-[44px]">
         <div className="flex items-center gap-1">
           {onBack && (
