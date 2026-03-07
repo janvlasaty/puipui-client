@@ -189,6 +189,41 @@ export type Database = {
         }
         Relationships: []
       }
+      pois_reviews: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          note: string
+          poi_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          note: string
+          poi_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          note?: string
+          poi_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pois_reviews_poi_id_fkey"
+            columns: ["poi_id"]
+            isOneToOne: false
+            referencedRelation: "pois"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar: string | null
@@ -394,6 +429,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      fn_accept_invitation: { Args: { p_code: string }; Returns: string }
+      fn_get_invitation: {
+        Args: { p_code: string }
+        Returns: {
+          code: string
+          created_at: string
+          expire_at: string
+          id: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "invitations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_user_in_room: { Args: { p_room_id: string }; Returns: boolean }
     }
     Enums: {

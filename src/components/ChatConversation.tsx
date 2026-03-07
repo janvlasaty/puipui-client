@@ -80,7 +80,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
       <PageHeader
         onBack={onBack}
         title={
-          <div className="flex items-center gap-2 px-3 py-1 bg-background/70 backdrop-blur-sm rounded-full border border-border/50">
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-background/70 backdrop-blur-sm rounded-full border border-border/50">
             {friendAvatar ? (
               <img src={friendAvatar} alt={friendName} className="w-5 h-5 rounded-full object-cover" />
             ) : (

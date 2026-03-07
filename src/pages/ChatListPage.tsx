@@ -6,6 +6,7 @@ import { ChatListSkeleton } from '../components/ChatListSkeleton'
 import type { Tables } from '../types/database'
 import { getRoomsWithProfiles } from '../repositories/rooms.repository'
 import { getLastMessagesByRoomIds } from '../repositories/messages.repository'
+import { decodeAvatar } from '../lib/utils'
 
 interface ChatListPageProps {
   onSelectFriend: (friend: Friend) => void
@@ -71,7 +72,7 @@ export const ChatListPage: React.FC<ChatListPageProps> = ({ onSelectFriend }) =>
         return {
           id: room.id,
           name: roomName,
-          avatar: (room.is_direct && room.rooms_users?.find(ru => ru.user_id !== session?.user?.id)?.profiles?.avatar) || '',
+          avatar: decodeAvatar((room.is_direct && room.rooms_users?.find(ru => ru.user_id !== session?.user?.id)?.profiles?.avatar) || null) || '',
           lastMessage: messagesMap[room.id]?.content || 'No messages yet',
           timestamp: messagesMap[room.id]?.created_at ? new Date(messagesMap[room.id].created_at).toLocaleDateString() : 'Just now',
           unread: 0,

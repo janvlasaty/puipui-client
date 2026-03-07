@@ -8,7 +8,7 @@ import { PlusIcon, FunnelIcon } from '@phosphor-icons/react'
 import { CATEGORY_COLOR, CATEGORIES, RECENT_VIBES, MY_REVIEWS } from '../components/vibes/vibeData'
 import { VibeItem } from '../components/vibes/VibeItem'
 import { VibeDetailModal } from '../components/vibes/VibeDetailModal'
-import { VibeFilterPopup } from '../components/vibes/VibeFilterPopup'
+import { CategoryFilterPopup } from '../components/CategoryFilterPopup'
 import { BookSearch, type AuthorResult, type BookResult, type SelectedAuthor } from '../components/vibes/BookSearch'
 import type { VibeEntry } from '../components/vibes/types'
 
@@ -63,6 +63,7 @@ export const VibesPage = () => {
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [activeVibe, setActiveVibe] = useState<VibeEntry | null>(null)
   const [showFilter, setShowFilter] = useState(false)
+  const filterBtnRef = useRef<HTMLDivElement>(null)
   const [activeCategories, setActiveCategories] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('vibes-filter')
@@ -108,7 +109,7 @@ export const VibesPage = () => {
     <div className="h-screen bg-background">
       <PageHeader
         left={
-          <div className="relative">
+          <div className="relative" ref={filterBtnRef}>
             <HeaderButton variant="default" onClick={() => setShowFilter((p) => !p)}>
               <FunnelIcon size={20} />
             </HeaderButton>
@@ -207,12 +208,13 @@ export const VibesPage = () => {
 
       <AnimatePresence>
         {showFilter && (
-          <VibeFilterPopup
+          <CategoryFilterPopup
             categories={CATEGORIES}
             activeIds={activeCategories}
             onToggle={toggleCategory}
             onSelectAll={() => setActiveCategories(ALL_CATEGORY_IDS)}
             onClose={() => setShowFilter(false)}
+            anchorRect={filterBtnRef.current?.getBoundingClientRect()}
           />
         )}
       </AnimatePresence>

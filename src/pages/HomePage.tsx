@@ -7,12 +7,13 @@ import { ChatListPage } from './ChatListPage'
 import { ChatDirectPage } from './ChatDirectPage'
 import { MapPage } from './MapPage'
 import { VibesPage } from './VibesPage'
+import { RoomsPage } from './RoomsPage'
 import { BottomNavigation } from '../components/BottomNavigation'
 import type { Friend } from '../components/FriendsList'
 
 const LAST_TAB_KEY = 'puipui_last_tab'
 
-type TabType = 'chat' | 'map' | 'vibes'
+type TabType = 'chat' | 'map' | 'vibes' | 'rooms'
 
 const slideOverVariants = {
   initial: { x: '100%' },
@@ -40,12 +41,12 @@ export const HomePage = () => {
     const pathSegments = location.pathname.split('/')
     const urlTab = pathSegments[1]
 
-    if (urlTab === 'chat' || urlTab === 'map' || urlTab === 'vibes') {
+    if (urlTab === 'chat' || urlTab === 'map' || urlTab === 'vibes' || urlTab === 'rooms') {
       setActiveTab(urlTab as TabType)
       localStorage.setItem(LAST_TAB_KEY, urlTab)
     } else {
       const savedTab = localStorage.getItem(LAST_TAB_KEY) as TabType | null
-      const tabToUse = (savedTab === 'chat' || savedTab === 'map' || savedTab === 'vibes')
+      const tabToUse = (savedTab === 'chat' || savedTab === 'map' || savedTab === 'vibes' || savedTab === 'rooms')
         ? savedTab
         : 'chat'
       setActiveTab(tabToUse)
@@ -72,6 +73,7 @@ export const HomePage = () => {
       {activeTab === 'chat' && <ChatListPage onSelectFriend={handleSelectFriend} />}
       {activeTab === 'map' && <MapPage />}
       {activeTab === 'vibes' && <VibesPage />}
+      {activeTab === 'rooms' && <RoomsPage />}
 
       <AnimatePresence>
         {activeTab === 'chat' && roomId && (

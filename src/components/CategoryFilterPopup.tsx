@@ -3,22 +3,25 @@ import type { ElementType } from 'react'
 
 export type FilterCategory = { id: string; label: string; Icon: ElementType; color: string }
 
-export const VibeFilterPopup = ({
+export const CategoryFilterPopup = ({
   categories,
   activeIds,
   onToggle,
   onSelectAll,
   onClose,
+  anchorRect,
 }: {
   categories: FilterCategory[]
   activeIds: string[]
   onToggle: (id: string) => void
   onSelectAll: () => void
   onClose: () => void
+  anchorRect?: DOMRect
 }) => (
   <>
     <div className="fixed inset-0 z-[15]" onClick={onClose} />
     <motion.div
+      style={anchorRect ? { top: anchorRect.bottom + 8, left: anchorRect.left } : undefined}
       className="fixed top-[72px] left-4 z-[16] bg-card rounded-2xl shadow-xl border border-border/50 overflow-hidden w-52"
       initial={{ opacity: 0, scale: 0.92, y: -6 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}

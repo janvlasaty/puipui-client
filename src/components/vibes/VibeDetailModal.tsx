@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { XIcon, PencilIcon, TrashIcon, CheckIcon } from '@phosphor-icons/react'
+import { ConfirmActionSheet } from '../ConfirmActionSheet'
 import { CATEGORY_COLOR } from './vibeData'
 import type { VibeEntry } from './types'
 
@@ -149,45 +150,12 @@ export const VibeDetailModal = ({ item, onClose }: { item: VibeEntry; onClose: (
         </motion.div>
       </div>
 
-      {/* Delete confirmation — iOS-style action sheet */}
-      <AnimatePresence>
-        {confirmDeleteIdx !== null && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-[47] bg-black/20"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setConfirmDeleteIdx(null)}
-            />
-            <motion.div
-              className="fixed bottom-0 left-0 right-0 z-[48] p-4 pb-8"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 420, damping: 36 }}
-            >
-              <div className="bg-card rounded-2xl overflow-hidden mb-3">
-                <div className="px-4 py-3 border-b border-border/50 text-center">
-                  <p className="text-xs text-muted-foreground">Remove your review?</p>
-                </div>
-                <button
-                  onClick={() => deleteReview(confirmDeleteIdx)}
-                  className="w-full py-3.5 text-sm font-semibold text-destructive hover:bg-muted transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-              <button
-                onClick={() => setConfirmDeleteIdx(null)}
-                className="w-full bg-card rounded-2xl py-3.5 text-sm font-semibold hover:bg-muted transition-colors"
-              >
-                Cancel
-              </button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <ConfirmActionSheet
+        open={confirmDeleteIdx !== null}
+        message="Remove your review?"
+        onConfirm={() => deleteReview(confirmDeleteIdx!)}
+        onCancel={() => setConfirmDeleteIdx(null)}
+      />
 
       {/* Emoji popover — fixed, escapes overflow-hidden */}
       <AnimatePresence>

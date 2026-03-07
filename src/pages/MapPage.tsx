@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { PageHeader, HeaderButton } from '../components/PageHeader'
 import { PlusIcon, FunnelIcon, NavigationArrowIcon } from '@phosphor-icons/react'
 import { AnimatePresence } from 'framer-motion'
-import { VibeFilterPopup } from '../components/vibes/VibeFilterPopup'
+import { CategoryFilterPopup } from '../components/CategoryFilterPopup'
 import { MAP_CATEGORIES, makeCategoryMarkerSvg } from '../components/map/mapCategories'
 import { PoiPopup } from '../components/map/PoiPopup'
 
@@ -59,6 +59,7 @@ export const MapPage = () => {
   const [isCreatingPoi, setIsCreatingPoi] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
   const [showFilter, setShowFilter] = useState(false)
+  const filterBtnRef = useRef<HTMLDivElement>(null)
   const [activeCategories, setActiveCategories] = useState<string[]>(() => {
     try {
       const stored = localStorage.getItem('map-filter')
@@ -435,7 +436,7 @@ export const MapPage = () => {
       <PageHeader
         left={
           !isCreatingPoi && (
-            <div className="relative">
+            <div className="relative" ref={filterBtnRef}>
               <HeaderButton variant="default" onClick={() => setShowFilter((p) => !p)}>
                 <FunnelIcon size={20} />
               </HeaderButton>
@@ -483,12 +484,13 @@ export const MapPage = () => {
 
       <AnimatePresence>
         {showFilter && (
-          <VibeFilterPopup
+          <CategoryFilterPopup
             categories={MAP_CATEGORIES}
             activeIds={activeCategories}
             onToggle={toggleCategory}
             onSelectAll={() => setActiveCategories(ALL_CATEGORY_IDS)}
             onClose={() => setShowFilter(false)}
+            anchorRect={filterBtnRef.current?.getBoundingClientRect()}
           />
         )}
       </AnimatePresence>

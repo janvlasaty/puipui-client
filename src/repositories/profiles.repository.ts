@@ -27,8 +27,8 @@ export const createProfile = (userId: string, name: string, surname: string) =>
     .select()
     .single()
 
-export const updateProfile = (userId: string, name: string, surname: string) =>
+export const updateProfile = (userId: string, name: string, surname: string, avatar?: string | null) =>
   supabase
     .from('profiles')
-    .update({ name, surname })
+    .update({ name, surname, ...(avatar !== undefined ? { avatar } : {}) })
     .eq('user_id', userId)

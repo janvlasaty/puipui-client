@@ -3,6 +3,7 @@ import { ChatConversation } from '../components/ChatConversation'
 import { useAuth } from '../hooks/useAuth'
 import { getMessagesByRoom, insertMessage, archiveMessage } from '../repositories/messages.repository'
 import { getRoomUsersWithProfiles } from '../repositories/rooms.repository'
+import { decodeAvatar } from '../lib/utils'
 
 interface Message {
   id: string
@@ -35,7 +36,7 @@ export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({ roomId, onBack }
       if (error) return
       const otherUser = (roomUsers || []).find((ru) => ru.user_id !== session.user.id)
       setFriendName(otherUser?.profiles?.name || 'Unknown')
-      setFriendAvatar(otherUser?.profiles?.avatar || '')
+      setFriendAvatar(decodeAvatar(otherUser?.profiles?.avatar) || '')
     }
     loadFriendData()
   }, [roomId, session?.user?.id])

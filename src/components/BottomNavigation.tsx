@@ -1,14 +1,15 @@
-import { ChatCircleIcon, MapTrifoldIcon, StarIcon } from '@phosphor-icons/react'
+import { ChatCircleIcon, ChatsIcon, MapTrifoldIcon, StarIcon } from '@phosphor-icons/react'
 import { motion } from 'framer-motion'
 
 interface BottomNavigationProps {
-  activeTab: 'chat' | 'map' | 'vibes'
-  onTabChange: (tab: 'chat' | 'map' | 'vibes') => void
+  activeTab: 'chat' | 'map' | 'vibes' | 'rooms'
+  onTabChange: (tab: 'chat' | 'map' | 'vibes' | 'rooms') => void
 }
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
     { id: 'chat', label: 'Chat', icon: ChatCircleIcon },
+    { id: 'rooms', label: 'Rooms', icon: ChatsIcon },
     { id: 'map', label: 'Map', icon: MapTrifoldIcon },
     { id: 'vibes', label: 'Vibes', icon: StarIcon },
   ] as const

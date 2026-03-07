@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useAuth } from './hooks/useAuth'
 import { useProfile } from './hooks/useProfile'
 import { LandingPage } from './pages/LandingPage'
+import { AuthPage } from './pages/AuthPage'
 import { HomePage } from './pages/HomePage'
 import { CreateProfilePage } from './pages/CreateProfilePage'
 import { SelectProfilePage } from './pages/SelectProfilePage'
@@ -58,6 +59,7 @@ function AppRoutes() {
   const { profile, loading: profileLoading, fetchProfile, fetchAllProfiles } = useProfile()
   const [hasMultipleProfiles, setHasMultipleProfiles] = useState(false)
   const [showProfileSelection, setShowProfileSelection] = useState(false)
+  const [showAuth, setShowAuth] = useState(false)
   const hasCheckedProfiles = useRef(false)
 
   useEffect(() => {
@@ -85,7 +87,8 @@ function AppRoutes() {
   }
 
   if (!session) {
-    return <LandingPage />
+    if (showAuth) return <AuthPage />
+    return <LandingPage onSignIn={() => setShowAuth(true)} />
   }
 
   if (showProfileSelection && hasMultipleProfiles) {
@@ -97,12 +100,13 @@ function AppRoutes() {
   }
 
   return (
-    <Router basename="/puipui-client">
+    <Router basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route path="/chat/:roomId" element={<HomePage />} />
         <Route path="/chat" element={<HomePage />} />
         <Route path="/map" element={<HomePage />} />
         <Route path="/vibes" element={<HomePage />} />
+        <Route path="/rooms" element={<HomePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/" element={<Navigate to="/chat" replace />} />
       </Routes>

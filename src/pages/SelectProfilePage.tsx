@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import type { Profile } from '../hooks/useProfile'
+import { decodeAvatar } from '../lib/utils'
 
 export const SelectProfilePage = () => {
   const { session } = useAuth()
@@ -67,9 +68,9 @@ export const SelectProfilePage = () => {
                 className="w-full bg-card rounded-lg border border-border p-4 hover:bg-card/80 hover:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
               >
                 <div className="flex items-center gap-3">
-                  {profile.avatar && (
+                  {decodeAvatar(profile.avatar) && (
                     <img
-                      src={profile.avatar}
+                      src={decodeAvatar(profile.avatar)!}
                       alt={`${profile.name} ${profile.surname}`}
                       className="w-12 h-12 rounded-full object-cover"
                     />
