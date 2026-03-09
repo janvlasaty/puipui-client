@@ -11,6 +11,7 @@ import { SettingsPage } from './pages/SettingsPage'
 import { ChatListSkeleton } from './components/ChatListSkeleton'
 import { ToastProvider, useToast } from './contexts/ToastContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { SheetProvider } from './components/ui/SheetPortal'
 
 function AppInner() {
   const { showToast } = useToast()
@@ -40,7 +41,9 @@ function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
-        <AppInner />
+        <SheetProvider>
+          <AppInner />
+        </SheetProvider>
       </ToastProvider>
     </ThemeProvider>
   )

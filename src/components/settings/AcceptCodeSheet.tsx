@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { XIcon } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SheetPortal } from '@/components/ui/SheetPortal'
 import { getInvitationByCode } from '../../repositories/invitations.repository'
 import { useToast } from '../../contexts/ToastContext'
 
@@ -64,6 +65,7 @@ export const AcceptCodeSheet = ({ open, onClose }: Props) => {
   }
 
   return (
+    <SheetPortal>
     <AnimatePresence>
       {open && (
         <>
@@ -138,5 +140,6 @@ export const AcceptCodeSheet = ({ open, onClose }: Props) => {
         </>
       )}
     </AnimatePresence>
+    </SheetPortal>
   )
 }

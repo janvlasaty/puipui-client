@@ -6,3 +6,4 @@ dist/*
 tsconfig.app.tsbuildinfo
 docs
 .claude
+CLAUDE.md
