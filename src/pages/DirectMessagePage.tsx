@@ -17,12 +17,12 @@ interface Message {
   createdAt?: Date
 }
 
-interface ChatDirectPageProps {
+interface DirectMessagePageProps {
   roomId: string
   onBack: () => void
 }
 
-export const ChatDirectPage: React.FC<ChatDirectPageProps> = ({ roomId, onBack }) => {
+export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, onBack }) => {
   const { session } = useAuth()
   const [conversationMessages, setConversationMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)

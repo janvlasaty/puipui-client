@@ -3,8 +3,8 @@ import { useNavigate, useLocation, useParams, useNavigationType } from 'react-ro
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
-import { ChatListPage } from './ChatListPage'
-import { ChatDirectPage } from './ChatDirectPage'
+import { DirectListPage } from './DirectListPage'
+import { DirectMessagePage } from './DirectMessagePage'
 import { MapPage } from './MapPage'
 import { VibesPage } from './VibesPage'
 import { RoomsPage } from './RoomsPage'
@@ -70,7 +70,7 @@ export const HomePage = () => {
 
   return (
     <div className="relative min-h-screen bg-background overflow-hidden">
-      {activeTab === 'chat' && <ChatListPage onSelectFriend={handleSelectFriend} />}
+      {activeTab === 'chat' && <DirectListPage onSelectFriend={handleSelectFriend} />}
       {activeTab === 'map' && <MapPage />}
       {activeTab === 'vibes' && <VibesPage />}
       {activeTab === 'rooms' && <RoomsPage />}
@@ -86,7 +86,7 @@ export const HomePage = () => {
             exit="exit"
             transition={slideTransition}
           >
-            <ChatDirectPage roomId={roomId} onBack={handleBackFromDirectChat} />
+            <DirectMessagePage roomId={roomId} onBack={handleBackFromDirectChat} />
           </motion.div>
         )}
       </AnimatePresence>

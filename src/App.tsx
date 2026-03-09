@@ -8,7 +8,7 @@ import { HomePage } from './pages/HomePage'
 import { CreateProfilePage } from './pages/CreateProfilePage'
 import { SelectProfilePage } from './pages/SelectProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
-import { ChatListSkeleton } from './components/ChatListSkeleton'
+import { DirectListSkeleton } from './components/DirectListSkeleton'
 import { ToastProvider, useToast } from './contexts/ToastContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 
@@ -83,7 +83,7 @@ function AppRoutes() {
   }
 
   if (loading || profileLoading) {
-    return <ChatListSkeleton />
+    return <DirectListSkeleton />
   }
 
   if (!session) {

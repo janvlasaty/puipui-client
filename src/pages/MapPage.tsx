@@ -62,16 +62,17 @@ function getMapboxCategory(ids: string[] = []) {
   return null
 }
 
-function getOsmCategory(tags: Record<string, string>) {
-  const a = tags.amenity, s = tags.shop, t = tags.tourism
-  if (a === 'cafe') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Coffee)
-  if (a === 'restaurant' || a === 'fast_food') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Food)
-  if (a === 'bar' || a === 'pub' || a === 'nightclub') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Drink)
-  if (a === 'bakery' || s === 'bakery') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Bakery)
-  if (t === 'hotel' || t === 'hostel' || t === 'guest_house' || t === 'motel') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Stay)
-  if (t === 'attraction') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Gem)
-  return null
-}
+// Unused for now - reserved for future OSM integration
+// function _getOsmCategory(tags: Record<string, string>) {
+//   const a = tags.amenity, s = tags.shop, t = tags.tourism
+//   if (a === 'cafe') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Coffee)
+//   if (a === 'restaurant' || a === 'fast_food') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Food)
+//   if (a === 'bar' || a === 'pub' || a === 'nightclub') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Drink)
+//   if (a === 'bakery' || s === 'bakery') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Bakery)
+//   if (t === 'hotel' || t === 'hostel' || t === 'guest_house' || t === 'motel') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Stay)
+//   if (t === 'attraction') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Gem)
+//   return null
+// }
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 const MAP_STYLE_LIGHT = import.meta.env.VITE_MAPBOX_STYLE_LIGHT
@@ -114,8 +115,8 @@ export const MapPage = () => {
   // Local state
   const [selectedPoiId, setSelectedPoiId] = useState<string | null>(null)
   const [isCreatingPoi, setIsCreatingPoi] = useState(false)
-  const [nearbyOverpassPois, setNearbyOverpassPois] = useState<OverpassPoi[]>([])
-  const [isLoadingOverpass, setIsLoadingOverpass] = useState(false)
+  const [_nearbyOverpassPois, setNearbyOverpassPois] = useState<OverpassPoi[]>([])
+  const [_isLoadingOverpass, setIsLoadingOverpass] = useState(false)
   const [nearbyMapboxPois, setNearbyMapboxPois] = useState<MapboxFeature[]>([])
   const [isLoadingMapbox, setIsLoadingMapbox] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
