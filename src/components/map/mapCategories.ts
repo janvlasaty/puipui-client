@@ -1,17 +1,26 @@
-import { Coffee, ForkKnife, Wine, Bread, Bed, Star } from '@phosphor-icons/react'
+import { CoffeeIcon, ForkKnifeIcon, PintGlassIcon, BreadIcon, BedIcon, StarIcon } from '@phosphor-icons/react'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { Database } from '../../types/database'
 
 export type PoiCategory = Database['public']['Enums']['type_poi_category']
 
+export enum EnumMapCategory {
+  Coffee = 'Coffee',
+  Food = 'Food',
+  Drink = 'Drink',
+  Bakery = 'Bakery',
+  Stay = 'Stay',
+  Gem = 'Gem',
+}
+
 export const MAP_CATEGORIES = [
-  { id: 'Coffee' as PoiCategory, label: 'Coffee',  Icon: Coffee,    color: '#A16207' },
-  { id: 'Food'   as PoiCategory, label: 'Food',    Icon: ForkKnife, color: '#EF4444' },
-  { id: 'Drink'  as PoiCategory, label: 'Drink',   Icon: Wine,      color: '#8B5CF6' },
-  { id: 'Bakery' as PoiCategory, label: 'Bakery',  Icon: Bread,     color: '#F97316' },
-  { id: 'Stay'   as PoiCategory, label: 'Stay',    Icon: Bed,       color: '#3B82F6' },
-  { id: 'Gem'    as PoiCategory, label: 'Gem',     Icon: Star,      color: '#10B981' },
+  { id: EnumMapCategory.Coffee as PoiCategory, label: 'Coffee',  Icon: CoffeeIcon,    color: '#A16207' },
+  { id: EnumMapCategory.Food   as PoiCategory, label: 'Food',    Icon: ForkKnifeIcon, color: '#8B5CF6' },
+  { id: EnumMapCategory.Drink  as PoiCategory, label: 'Drink',   Icon: PintGlassIcon, color: '#EF4444' },
+  { id: EnumMapCategory.Bakery as PoiCategory, label: 'Bakery',  Icon: BreadIcon,     color: '#F97316' },
+  { id: EnumMapCategory.Stay   as PoiCategory, label: 'Stay',    Icon: BedIcon,       color: '#3B82F6' },
+  { id: EnumMapCategory.Gem    as PoiCategory, label: 'Gem',     Icon: StarIcon,      color: '#10B981' },
 ]
 
 export type MapCategory = typeof MAP_CATEGORIES[number]

@@ -38,9 +38,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, onBack, left, rig
           height: '80px',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
-          WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-          maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
-          background: 'linear-gradient(to bottom, hsl(var(--background)) 0%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, var(--background) 0%, transparent 100%)',
+          maskImage: 'linear-gradient(to bottom, var(--background) 0%, transparent 100%)',
+          background: 'linear-gradient(to bottom, var(--background) 0%, transparent 100%)',
           zIndex: -1,
         }}
       />

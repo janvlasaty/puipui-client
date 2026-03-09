@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import mapboxgl from 'mapbox-gl'
 import type { Map as MapboxMap, LngLatLike } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -8,13 +9,69 @@ import { useToast } from '../contexts/ToastContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { Button } from '@/components/ui/button'
 import { PageHeader, HeaderButton } from '../components/PageHeader'
-import { PlusIcon, FunnelIcon, NavigationArrowIcon } from '@phosphor-icons/react'
-import { AnimatePresence } from 'framer-motion'
+import { PlusIcon, FunnelIcon, NavigationArrowIcon, HashIcon, XIcon, MapPinIcon } from '@phosphor-icons/react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { CategoryFilterPopup } from '../components/CategoryFilterPopup'
-import { MAP_CATEGORIES, makeCategoryMarkerSvg } from '../components/map/mapCategories'
+import { EnumMapCategory, MAP_CATEGORIES, makeCategoryMarkerSvg } from '../components/map/mapCategories'
 import { PoiPopup } from '../components/map/PoiPopup'
 
 const ALL_CATEGORY_IDS = MAP_CATEGORIES.map((c) => c.id)
+
+type OverpassPoi = {
+  id: number
+  lat: number
+  lon: number
+  tags: Record<string, string>
+}
+
+const OVERPASS_RADIUS_M = 100
+const OVERPASS_QUERY = (lat: number, lng: number) =>
+  `[out:json][timeout:10];(node["amenity"~"cafe|restaurant|fast_food|bar|pub|nightclub|bakery"]["name"](around:${OVERPASS_RADIUS_M},${lat},${lng});node["shop"="bakery"]["name"](around:${OVERPASS_RADIUS_M},${lat},${lng});node["tourism"~"hotel|hostel|guest_house|motel|attraction"]["name"](around:${OVERPASS_RADIUS_M},${lat},${lng}););out body;`
+
+// POI from Mapbox Search Box v1 category endpoint
+type MapboxFeature = {
+  id: string
+  properties: {
+    name: string
+    feature_type: string
+    poi_category?: string[]
+    poi_category_ids?: string[]
+    full_address?: string
+    place_formatted?: string
+    distance?: number
+  }
+  geometry: { coordinates: [number, number] }
+}
+
+const SEARCHBOX_CATEGORIES = [
+  'coffee_shop', 'restaurant', 'fast_food_restaurant',
+  'bar', 'pub', 'nightclub',
+  'bakery',
+  'hotel', 'hostel', 'motel',
+  'museum', 'tourist_attraction',
+].join(',')
+
+function getMapboxCategory(ids: string[] = []) {
+  const c = ids.join(' ')
+  if (c.includes('coffee') || c.includes('cafe')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Coffee)
+  if (c.includes('restaurant') || c.includes('fast_food')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Food)
+  if (c.includes('bar') || c.includes('pub') || c.includes('nightclub')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Drink)
+  if (c.includes('bakery')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Bakery)
+  if (c.includes('hotel') || c.includes('hostel') || c.includes('motel')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Stay)
+  if (c.includes('attraction') || c.includes('museum')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Gem)
+  return null
+}
+
+function getOsmCategory(tags: Record<string, string>) {
+  const a = tags.amenity, s = tags.shop, t = tags.tourism
+  if (a === 'cafe') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Coffee)
+  if (a === 'restaurant' || a === 'fast_food') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Food)
+  if (a === 'bar' || a === 'pub' || a === 'nightclub') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Drink)
+  if (a === 'bakery' || s === 'bakery') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Bakery)
+  if (t === 'hotel' || t === 'hostel' || t === 'guest_house' || t === 'motel') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Stay)
+  if (t === 'attraction') return MAP_CATEGORIES.find((c) => c.id === EnumMapCategory.Gem)
+  return null
+}
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 const MAP_STYLE_LIGHT = import.meta.env.VITE_MAPBOX_STYLE_LIGHT
@@ -57,6 +114,10 @@ export const MapPage = () => {
   // Local state
   const [selectedPoiId, setSelectedPoiId] = useState<string | null>(null)
   const [isCreatingPoi, setIsCreatingPoi] = useState(false)
+  const [nearbyOverpassPois, setNearbyOverpassPois] = useState<OverpassPoi[]>([])
+  const [isLoadingOverpass, setIsLoadingOverpass] = useState(false)
+  const [nearbyMapboxPois, setNearbyMapboxPois] = useState<MapboxFeature[]>([])
+  const [isLoadingMapbox, setIsLoadingMapbox] = useState(false)
   const [isLocating, setIsLocating] = useState(false)
   const [showFilter, setShowFilter] = useState(false)
   const filterBtnRef = useRef<HTMLDivElement>(null)
@@ -90,6 +151,11 @@ export const MapPage = () => {
   poisRef.current = pois
   const activeCategoriesRef = useRef<string[]>([])
   activeCategoriesRef.current = activeCategories
+  const isCreatingPoiRef = useRef(false)
+  isCreatingPoiRef.current = isCreatingPoi
+  const fetchNearbyOverpassRef = useRef<(lat: number, lng: number) => void>(() => {})
+  const fetchNearbyMapboxRef = useRef<(lat: number, lng: number) => void>(() => {})
+  const mapboxLoadedOnceRef = useRef(false)
 
   // Persist map state to localStorage
   useEffect(() => {
@@ -99,6 +165,17 @@ export const MapPage = () => {
   useEffect(() => {
     localStorage.setItem('map-filter', JSON.stringify(activeCategories))
   }, [activeCategories])
+
+  useEffect(() => {
+    if (isCreatingPoi && map.current) {
+      const center = map.current.getCenter()
+      fetchNearbyMapboxRef.current(center.lat, center.lng)
+    } else {
+      setNearbyMapboxPois([])
+      setIsLoadingMapbox(false)
+      mapboxLoadedOnceRef.current = false
+    }
+  }, [isCreatingPoi])
 
   // Fetch POIs based on map bounds
   const fetchPoiData = useCallback(() => {
@@ -130,6 +207,49 @@ export const MapPage = () => {
   }, [setPoisCache, setPoisLoading])
 
   fetchPoiDataRef.current = fetchPoiData
+
+  const fetchNearbyOverpass = useCallback(async (lat: number, lng: number) => {
+    setIsLoadingOverpass(true)
+    try {
+      const res = await fetch(
+        `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(OVERPASS_QUERY(lat, lng))}`
+      )
+      if (!res.ok) throw new Error('Overpass error')
+      const data = await res.json()
+      setNearbyOverpassPois(data.elements ?? [])
+    } catch (e) {
+      console.error('Overpass fetch error:', e)
+      setNearbyOverpassPois([])
+    } finally {
+      setIsLoadingOverpass(false)
+    }
+  }, [])
+
+  fetchNearbyOverpassRef.current = fetchNearbyOverpass
+
+  const fetchNearbyMapbox = useCallback(async (lat: number, lng: number) => {
+    setIsLoadingMapbox(true)
+    try {
+      const bounds = map.current?.getBounds()
+      const bbox = bounds
+        ? `&bbox=${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`
+        : ''
+      const res = await fetch(
+        `https://api.mapbox.com/search/searchbox/v1/category/${SEARCHBOX_CATEGORIES}?proximity=${lng},${lat}${bbox}&limit=10&access_token=${MAPBOX_TOKEN}`
+      )
+      if (!res.ok) throw new Error('Mapbox fetch error')
+      const data = await res.json()
+      setNearbyMapboxPois(data.features ?? [])
+    } catch (e) {
+      console.error('Mapbox fetch error:', e)
+      setNearbyMapboxPois([])
+    } finally {
+      mapboxLoadedOnceRef.current = true
+      setIsLoadingMapbox(false)
+    }
+  }, [])
+
+  fetchNearbyMapboxRef.current = fetchNearbyMapbox
 
   // Add POI image, source, layers, and event handlers to the map.
   // Called on initial load and again after a style change (setStyle wipes everything).
@@ -329,10 +449,13 @@ export const MapPage = () => {
       if (map.current) {
         const center = map.current.getCenter()
         setMapState({ center: [center.lng, center.lat], zoom: map.current.getZoom() })
+        if (isCreatingPoiRef.current) {
+          fetchNearbyMapboxRef.current(center.lat, center.lng)
+        }
       }
     })
 
-    map.current.addControl(new mapboxgl.AttributionControl(), 'top-right')
+    map.current.addControl(new mapboxgl.AttributionControl(), 'bottom-right')
 
     // Prevent attribution links from opening Safari in-app browser on iOS PWA.
     const container = mapContainer.current
@@ -436,22 +559,25 @@ export const MapPage = () => {
       <PageHeader
         left={
           !isCreatingPoi && (
-            <div className="relative" ref={filterBtnRef}>
+            <div className="flex gap-2" ref={filterBtnRef}>
               <HeaderButton variant="default" onClick={() => setShowFilter((p) => !p)}>
                 <FunnelIcon size={20} />
               </HeaderButton>
               {isFiltered && (
                 <span className="absolute top-0.5 right-0.5 w-2 h-2 rounded-full bg-primary pointer-events-none" />
               )}
+              <HeaderButton onClick={handleLocateMe} disabled={isLocating} className="md:hidden">
+                <HashIcon size={20} />
+              </HeaderButton>
+              <HeaderButton onClick={handleLocateMe} disabled={isLocating} className="md:hidden">
+                <NavigationArrowIcon size={20} />
+              </HeaderButton>
             </div>
           )
         }
         right={
           !isCreatingPoi && (
             <div className="flex gap-2">
-              <HeaderButton onClick={handleLocateMe} disabled={isLocating} className="md:hidden">
-                <NavigationArrowIcon size={20} />
-              </HeaderButton>
               <HeaderButton onClick={handleCreateNew} variant="primary">
                 <PlusIcon size={20} />
               </HeaderButton>
@@ -475,9 +601,13 @@ export const MapPage = () => {
 
       {/* Center Crosshair - Fixed when creating POI */}
       {isCreatingPoi && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
-          <div className="w-12 h-12 rounded-full border-2 border-red-500 flex items-center justify-center">
-            <div className="w-2 h-2 bg-red-500 rounded-full" />
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-full z-20 pointer-events-none flex flex-col items-center">
+          <div className="animate-bounce">
+            <MapPinIcon size={40} weight="fill" className="text-primary drop-shadow-md" />
+          </div>
+          <div className="relative flex items-center justify-center">
+            <div className="absolute w-10 h-10 rounded-full border-2 border-primary animate-ping opacity-30" />
+            <div className="w-2 h-2 rounded-full bg-primary/40 blur-[2px]" />
           </div>
         </div>
       )}
@@ -495,16 +625,76 @@ export const MapPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Create POI confirm/cancel */}
-      {isCreatingPoi && (
-        <div className="fixed top-16 left-1/2 transform -translate-x-1/2 z-10 flex gap-2">
-          <Button onClick={handleCancel} variant="outline">
-            Cancel
-          </Button>
-          <Button onClick={handleCreateHere} className="bg-red-500 hover:bg-red-600">
-            Create here
-          </Button>
-        </div>
+      {/* Create POI sheet — portalled to body to escape stacking context */}
+      {createPortal(
+        <AnimatePresence>
+          {isCreatingPoi && (
+            <motion.div
+            className="fixed bottom-0 left-0 right-0 z-50 flex justify-center"
+            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 32, mass: 0.8 }}
+          >
+              <div className="w-full max-w-2xl bg-background rounded-t-2xl shadow-xl">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 pt-6 pb-4">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                    Venues nearby
+                    {/* <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-muted text-foreground">
+                      {nearbyMapboxPois.length}
+                    </span> */}
+                    {isLoadingMapbox && <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-current border-t-transparent rounded-full animate-spin" />}
+                  </h3>
+                  <button onClick={handleCancel} className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground">
+                    <XIcon size={16} />
+                  </button>
+                </div>
+
+                {/* Static-height venue list */}
+                <div className="h-42 overflow-y-auto divide-y divide-border/30 px-2">
+                  {!mapboxLoadedOnceRef.current && isLoadingMapbox ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 px-4 py-2.5 animate-pulse">
+                        <div className="w-5 h-5 rounded-full bg-muted shrink-0" />
+                        <div className="h-3 bg-muted rounded-full flex-1" />
+                        <div className="h-6 w-14 bg-muted rounded-full shrink-0" />
+                      </div>
+                    ))
+                  ) : nearbyMapboxPois.length === 0 ? (
+                    <div className="flex items-center justify-center h-full">
+                      <p className="text-xs text-muted-foreground">No existing venues nearby</p>
+                    </div>
+                  ) : (
+                    nearbyMapboxPois.map((poi) => {
+                      const cat = getMapboxCategory(poi.properties.poi_category_ids ?? poi.properties.poi_category)
+                      return (
+                        <div key={poi.id} className="flex items-center gap-3 px-4 py-2.5">
+                          {cat ? (
+                            <cat.Icon size={20} weight="fill" color={cat.color} className="shrink-0" />
+                          ) : (
+                            <div className="w-5 h-5 rounded-full bg-muted shrink-0" />
+                          )}
+                          <span className="text-sm font-medium flex-1 truncate">{poi.properties.name}</span>
+                          <button className="shrink-0 text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground transition-colors">
+                            Select
+                          </button>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                {/* Create here */}
+                <div className="px-6 py-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                  <Button onClick={handleCreateHere} className="w-full bg-primary text-white flex items-center gap-2">
+                    <MapPinIcon size={18} weight="fill" />
+                    Create new venue here
+                  </Button>
+                </div>
+              </div>
+          </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
     </div>
   )
