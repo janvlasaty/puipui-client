@@ -8,7 +8,7 @@ interface BottomNavigationProps {
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
-    { id: 'chat', label: 'Chat', icon: ChatCircleIcon },
+    { id: 'chat', label: 'Direct', icon: ChatCircleIcon },
     { id: 'rooms', label: 'Rooms', icon: ChatsIcon },
     { id: 'map', label: 'Map', icon: MapTrifoldIcon },
     { id: 'vibes', label: 'Vibes', icon: StarIcon },

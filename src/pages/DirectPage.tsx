@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { ChatListPage } from './ChatListPage'
-import { ChatDirectPage } from './ChatDirectPage'
+import { DirectListPage } from './DirectListPage'
+import { DirectMessagePage } from './DirectMessagePage'
 import type { Friend } from '../components/FriendsList'
 import { motion, AnimatePresence } from 'framer-motion'
 
-interface ChatPageProps {
+interface DirectPageProps {
   onDirectChatChange: (isInDirectChat: boolean) => void
   directChatRoomId?: string
   onOpenDirectChat?: (friendId: string) => void
@@ -13,7 +13,7 @@ interface ChatPageProps {
 
 const slideTransition = { type: 'spring' as const, stiffness: 300, damping: 32, mass: 0.8 }
 
-export const ChatPage: React.FC<ChatPageProps> = ({
+export const DirectPage: React.FC<DirectPageProps> = ({
   onDirectChatChange,
   directChatRoomId,
   onOpenDirectChat,
@@ -60,7 +60,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
   return (
     <div className="relative h-full overflow-hidden">
-      <ChatListPage onSelectFriend={handleSelectFriend} />
+      <DirectListPage onSelectFriend={handleSelectFriend} />
       <AnimatePresence initial={false}>
         {selectedRoomId && (
           <motion.div
@@ -71,7 +71,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
             exit={{ x: '100%' }}
             transition={slideTransition}
           >
-            <ChatDirectPage
+            <DirectMessagePage
               roomId={selectedRoomId}
               onBack={handleBackToList}
             />
