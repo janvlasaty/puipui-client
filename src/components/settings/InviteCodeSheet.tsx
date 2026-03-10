@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { CheckIcon, XIcon, CopySimpleIcon, TrashSimpleIcon } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SheetPortal } from '@/components/ui/SheetPortal'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../../hooks/useAuth'
 import { getMyActiveInvitation, generateUniqueCode, deleteExpiredInvitations, deleteInvitationByCode } from '../../repositories/invitations.repository'
@@ -84,7 +85,7 @@ export const InviteCodeSheet = ({ open, onClose }: Props) => {
   }
 
   return (
-    <>
+    <SheetPortal>
       <AnimatePresence>
         {open && (
           <>
@@ -201,6 +202,6 @@ export const InviteCodeSheet = ({ open, onClose }: Props) => {
         onConfirm={handleDeleteCode}
         onCancel={() => setConfirmDelete(false)}
       />
-    </>
+    </SheetPortal>
   )
 }

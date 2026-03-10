@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { CheckIcon, UserIcon, XIcon } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SheetPortal } from '@/components/ui/SheetPortal'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '../../hooks/useAuth'
 import { useProfile } from '../../hooks/useProfile'
@@ -93,6 +94,7 @@ export const EditProfileSheet = ({ open, onClose }: Props) => {
   const isDirty = name !== (profile?.name ?? '') || surname !== (profile?.surname ?? '') || avatarPreview !== decodeAvatar(profile?.avatar ?? null)
 
   return (
+    <SheetPortal>
     <AnimatePresence>
       {open && (
         <>
@@ -192,5 +194,6 @@ export const EditProfileSheet = ({ open, onClose }: Props) => {
         </>
       )}
     </AnimatePresence>
+    </SheetPortal>
   )
 }
