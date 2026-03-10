@@ -277,8 +277,8 @@ export const MapPage = () => {
     if (!map.current) return
     const center = map.current.getCenter()
     console.log('Creating POI at:', center)
-    handleCancel()
-    alert(`New POI would be created at ${center.lat.toFixed(4)}, ${center.lng.toFixed(4)}`)
+    // Refresh POI data after successful creation
+    fetchPoiData()
   }
 
   const handleLocateMe = () => {
@@ -371,8 +371,10 @@ export const MapPage = () => {
         nearbyPois={nearbyMapboxPois}
         isLoading={isLoadingMapbox}
         hasLoadedOnce={mapboxLoadedOnceRef.current}
+        centerLat={map.current?.getCenter().lat ?? mapState.center[1]}
+        centerLng={map.current?.getCenter().lng ?? mapState.center[0]}
         onCancel={handleCancel}
-        onCreateHere={handleCreateHere}
+        onSuccess={handleCreateHere}
       />
     </div>
   )

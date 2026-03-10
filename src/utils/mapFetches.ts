@@ -1,4 +1,5 @@
 import { MAP_CATEGORIES, EnumMapCategory } from '../components/map/mapCategories'
+import type { PoiCategory } from '../components/map/mapCategories'
 
 export type OverpassPoi = {
   id: number
@@ -43,6 +44,11 @@ export function getMapboxCategory(ids: string[] = []) {
   if (c.includes('hotel') || c.includes('hostel') || c.includes('motel')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Stay)
   if (c.includes('attraction') || c.includes('museum')) return MAP_CATEGORIES.find((m) => m.id === EnumMapCategory.Gem)
   return null
+}
+
+export function mapMapboxCategoryToPoiCategory(ids: string[] = []): PoiCategory | null {
+  const cat = getMapboxCategory(ids)
+  return cat?.id ?? null
 }
 
 export function getOsmCategory(tags: Record<string, string>) {
