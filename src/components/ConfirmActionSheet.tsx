@@ -5,6 +5,8 @@ interface ConfirmActionSheetProps {
   open: boolean
   message: string
   confirmLabel?: string
+  overlayZIndex?: number
+  zIndex?: number
   onConfirm: () => void
   onCancel: () => void
 }
@@ -13,12 +15,14 @@ export const ConfirmActionSheet: React.FC<ConfirmActionSheetProps> = ({
   open,
   message,
   confirmLabel = 'Delete',
+  overlayZIndex,
+  zIndex,
   onConfirm,
   onCancel,
 }) => (
   <AnimatePresence>
     {open && (
-      <BottomSheet overlay onClose={onCancel}>
+      <BottomSheet overlay onClose={onCancel} overlayZIndex={overlayZIndex} zIndex={zIndex}>
         <div className="p-4 pb-8">
           <div className="bg-card rounded-2xl overflow-hidden mb-3">
             <div className="px-4 py-3 border-b border-border/50 text-center">

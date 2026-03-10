@@ -7,7 +7,7 @@ const rows = [
   { nameWidth: 'w-16', msgWidth: 'w-48' },
 ]
 
-export const DirectListSkeleton = () => (
+export const ConversationListSkeleton = () => (
   <div className="min-h-screen bg-background pb-24 flex flex-col">
     {/* Header */}
     <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-4">

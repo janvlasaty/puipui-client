@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { DirectListPage } from './DirectListPage'
 import { DirectMessagePage } from './DirectMessagePage'
-import type { Friend } from '../components/FriendsList'
+import type { Friend } from '../../components/chat/ConversationList'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface DirectPageProps {

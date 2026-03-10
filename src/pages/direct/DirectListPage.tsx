@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
-import { useAuth } from '../hooks/useAuth'
-import { useDataCache } from '../contexts/DataCacheContext'
-import { FriendsList, type Friend } from '../components/FriendsList'
-import { DirectListSkeleton } from '../components/DirectListSkeleton'
-import type { Tables } from '../types/database'
-import { getRoomsWithProfiles } from '../repositories/rooms.repository'
-import { getLastMessagesByRoomIds } from '../repositories/messages.repository'
-import { decodeAvatar } from '../lib/utils'
+import { useAuth } from '../../hooks/useAuth'
+import { useDataCache } from '../../contexts/DataCacheContext'
+import { ConversationList, type Friend } from '../../components/chat/ConversationList'
+import { ConversationListSkeleton } from '../../components/chat/ConversationListSkeleton'
+import type { Tables } from '../../types/database'
+import { getRoomsWithProfiles } from '../../repositories/rooms.repository'
+import { getLastMessagesByRoomIds } from '../../repositories/messages.repository'
+import { decodeAvatar } from '../../lib/utils'
 
 interface DirectListPageProps {
   onSelectFriend: (friend: Friend) => void
@@ -90,8 +90,8 @@ export const DirectListPage: React.FC<DirectListPageProps> = ({ onSelectFriend }
   const loading = !roomsCache.lastFetched
 
   if (loading) {
-    return <DirectListSkeleton />
+    return <ConversationListSkeleton />
   }
 
-  return <FriendsList friends={friends} onSelectFriend={onSelectFriend} />
+  return <ConversationList friends={friends} onSelectFriend={onSelectFriend} />
 }

@@ -3,13 +3,13 @@ import { useNavigate, useLocation, useParams, useNavigationType } from 'react-ro
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
-import { DirectListPage } from './DirectListPage'
-import { DirectMessagePage } from './DirectMessagePage'
+import { DirectListPage } from './direct/DirectListPage'
+import { DirectMessagePage } from './direct/DirectMessagePage'
 import { MapPage } from './MapPage'
 import { VibesPage } from './VibesPage'
-import { RoomsPage } from './RoomsPage'
+import { RoomsPage } from './rooms/RoomsPage'
 import { BottomNavigation } from '../components/BottomNavigation'
-import type { Friend } from '../components/FriendsList'
+import type { Friend } from '../components/chat/ConversationList'
 
 const LAST_TAB_KEY = 'puipui_last_tab'
 

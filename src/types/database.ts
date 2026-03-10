@@ -123,6 +123,7 @@ export type Database = {
           id: string
           room_id: string
           topic_id: string | null
+          type: Database["public"]["Enums"]["type_message_type"]
           user_id: string
         }
         Insert: {
@@ -133,6 +134,7 @@ export type Database = {
           id?: string
           room_id: string
           topic_id?: string | null
+          type?: Database["public"]["Enums"]["type_message_type"]
           user_id: string
         }
         Update: {
@@ -143,6 +145,7 @@ export type Database = {
           id?: string
           room_id?: string
           topic_id?: string | null
+          type?: Database["public"]["Enums"]["type_message_type"]
           user_id?: string
         }
         Relationships: [
@@ -430,25 +433,17 @@ export type Database = {
     }
     Functions: {
       fn_accept_invitation: { Args: { p_code: string }; Returns: string }
-      fn_get_invitation: {
-        Args: { p_code: string }
-        Returns: {
-          code: string
-          created_at: string
-          expire_at: string
-          id: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "invitations"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      fn_create_room: { Args: { p_label: string }; Returns: string }
       get_user_in_room: { Args: { p_room_id: string }; Returns: boolean }
     }
     Enums: {
+      type_message_type:
+        | "text"
+        | "link"
+        | "poll"
+        | "expense"
+        | "image"
+        | "location"
       type_poi_category: "Coffee" | "Food" | "Drink" | "Bakery" | "Stay" | "Gem"
     }
     CompositeTypes: {
@@ -580,6 +575,14 @@ export const Constants = {
   },
   public: {
     Enums: {
+      type_message_type: [
+        "text",
+        "link",
+        "poll",
+        "expense",
+        "image",
+        "location",
+      ],
       type_poi_category: ["Coffee", "Food", "Drink", "Bakery", "Stay", "Gem"],
     },
   },

@@ -12,8 +12,8 @@ import { AnimatePresence } from 'framer-motion'
 import { CategoryFilterPopup } from '../components/CategoryFilterPopup'
 import { MAP_CATEGORIES } from '../components/map/mapCategories'
 import { PoiPopup } from '../components/map/PoiPopup'
-import { CreatePoiSheet } from '../components/map/CreatePoiSheet'
 import { useMapLayers } from '../hooks/useMapLayers'
+import { useOverlay } from '../contexts/OverlayContext'
 import { fetchNearbyMapbox } from '../utils/mapFetches'
 import type { MapboxFeature } from '../utils/mapFetches'
 
@@ -270,16 +270,42 @@ export const MapPage = () => {
     })
   }, [pois, activeCategories])
 
-  const handleCreateNew = () => setIsCreatingPoi(true)
-  const handleCancel    = () => setIsCreatingPoi(false)
+  const { openPoiSheet, updatePoiSheet, closePoiSheet } = useOverlay()
+
+  const handleCancel = () => {
+    setIsCreatingPoi(false)
+    closePoiSheet()
+  }
 
   const handleCreateHere = async () => {
     if (!map.current) return
     const center = map.current.getCenter()
     console.log('Creating POI at:', center)
-    // Refresh POI data after successful creation
     fetchPoiData()
   }
+
+  const handleCreateNew = () => {
+    setIsCreatingPoi(true)
+    openPoiSheet({
+      nearbyPois: nearbyMapboxPois,
+      isLoading: isLoadingMapbox,
+      hasLoadedOnce: mapboxLoadedOnceRef.current,
+      centerLat: map.current?.getCenter().lat ?? mapState.center[1],
+      centerLng: map.current?.getCenter().lng ?? mapState.center[0],
+      onCancel: handleCancel,
+      onSuccess: handleCreateHere,
+    })
+  }
+
+  useEffect(() => {
+    if (isCreatingPoi) {
+      updatePoiSheet({
+        nearbyPois: nearbyMapboxPois,
+        isLoading: isLoadingMapbox,
+        hasLoadedOnce: mapboxLoadedOnceRef.current,
+      })
+    }
+  }, [isCreatingPoi, nearbyMapboxPois, isLoadingMapbox])
 
   const handleLocateMe = () => {
     if (!map.current) return
@@ -366,16 +392,6 @@ export const MapPage = () => {
         )}
       </AnimatePresence>
 
-      <CreatePoiSheet
-        open={isCreatingPoi}
-        nearbyPois={nearbyMapboxPois}
-        isLoading={isLoadingMapbox}
-        hasLoadedOnce={mapboxLoadedOnceRef.current}
-        centerLat={map.current?.getCenter().lat ?? mapState.center[1]}
-        centerLng={map.current?.getCenter().lng ?? mapState.center[0]}
-        onCancel={handleCancel}
-        onSuccess={handleCreateHere}
-      />
     </div>
   )
 }

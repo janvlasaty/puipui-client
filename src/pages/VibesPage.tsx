@@ -7,10 +7,9 @@ import { supabase } from '../lib/supabase'
 import { PlusIcon, FunnelIcon } from '@phosphor-icons/react'
 import { CATEGORY_COLOR, CATEGORIES, RECENT_VIBES, MY_REVIEWS } from '../components/vibes/vibeData'
 import { VibeItem } from '../components/vibes/VibeItem'
-import { VibeDetailModal } from '../components/vibes/VibeDetailModal'
 import { CategoryFilterPopup } from '../components/CategoryFilterPopup'
 import { BookSearch, type AuthorResult, type BookResult, type SelectedAuthor } from '../components/vibes/BookSearch'
-import type { VibeEntry } from '../components/vibes/types'
+import { useOverlay } from '../contexts/OverlayContext'
 
 const ALL_CATEGORY_IDS = CATEGORIES.map((c) => c.id)
 
@@ -60,8 +59,8 @@ export const VibesPage = () => {
   }
   const handleSignOut = async () => { await supabase.auth.signOut() }
 
+  const { openVibeDetail } = useOverlay()
   const [showAllReviews, setShowAllReviews] = useState(false)
-  const [activeVibe, setActiveVibe] = useState<VibeEntry | null>(null)
   const [showFilter, setShowFilter] = useState(false)
   const filterBtnRef = useRef<HTMLDivElement>(null)
   const [activeCategories, setActiveCategories] = useState<string[]>(() => {
@@ -141,7 +140,7 @@ export const VibesPage = () => {
                 ).map((col, ci) => (
                   <div key={ci} className="flex flex-col gap-2 shrink-0 snap-start" style={{ width: colWidth }}>
                     {col.map((v) => (
-                      <VibeItem key={v.id} {...v} onClick={() => setActiveVibe(v)} />
+                      <VibeItem key={v.id} {...v} onClick={() => openVibeDetail(v)} />
                     ))}
                   </div>
                 )) : (
@@ -164,7 +163,7 @@ export const VibesPage = () => {
                 ).map((col, ci) => (
                   <div key={ci} className="flex flex-col gap-2 shrink-0 snap-start" style={{ width: colWidth }}>
                     {col.map((v) => (
-                      <VibeItem key={v.id} {...v} onClick={() => setActiveVibe(v)} />
+                      <VibeItem key={v.id} {...v} onClick={() => openVibeDetail(v)} />
                     ))}
                   </div>
                 )) : null}
@@ -219,11 +218,6 @@ export const VibesPage = () => {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {activeVibe && (
-          <VibeDetailModal item={activeVibe} onClose={() => setActiveVibe(null)} />
-        )}
-      </AnimatePresence>
     </div>
   )
 }

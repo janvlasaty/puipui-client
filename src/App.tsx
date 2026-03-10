@@ -8,10 +8,11 @@ import { HomePage } from './pages/HomePage'
 import { CreateProfilePage } from './pages/CreateProfilePage'
 import { SelectProfilePage } from './pages/SelectProfilePage'
 import { SettingsPage } from './pages/SettingsPage'
-import { DirectListSkeleton } from './components/DirectListSkeleton'
+import { ConversationListSkeleton } from './components/chat/ConversationListSkeleton'
 import { ToastProvider, useToast } from './contexts/ToastContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { SheetProvider } from './components/ui/SheetPortal'
+import { OverlayProvider } from './contexts/OverlayContext'
 
 function AppInner() {
   const { showToast } = useToast()
@@ -42,7 +43,9 @@ function App() {
     <ThemeProvider>
       <ToastProvider>
         <SheetProvider>
-          <AppInner />
+          <OverlayProvider>
+            <AppInner />
+          </OverlayProvider>
         </SheetProvider>
       </ToastProvider>
     </ThemeProvider>
@@ -86,7 +89,7 @@ function AppRoutes() {
   }
 
   if (loading || profileLoading) {
-    return <DirectListSkeleton />
+    return <ConversationListSkeleton />
   }
 
   if (!session) {

@@ -1,6 +1,6 @@
 import { ChatCircleIcon, GearIcon, UserIcon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
-import { PageHeader, HeaderButton } from './PageHeader'
+import { PageHeader, HeaderButton } from '../PageHeader'
 
 export interface Friend {
   id: string
@@ -11,12 +11,12 @@ export interface Friend {
   unread?: number
 }
 
-interface FriendsListProps {
+interface ConversationListProps {
   friends: Friend[]
   onSelectFriend: (friend: Friend) => void
 }
 
-export const FriendsList: React.FC<FriendsListProps> = ({ friends, onSelectFriend }) => {
+export const ConversationList: React.FC<ConversationListProps> = ({ friends, onSelectFriend }) => {
   const navigate = useNavigate()
 
   return (

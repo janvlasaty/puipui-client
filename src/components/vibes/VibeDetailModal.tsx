@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { XIcon, PencilIcon, TrashIcon, CheckIcon } from '@phosphor-icons/react'
+import { PencilIcon, TrashIcon, CheckIcon } from '@phosphor-icons/react'
 import { ConfirmActionSheet } from '../ConfirmActionSheet'
+import { ModalCard } from '../ui/ModalCard'
 import { CATEGORY_COLOR } from './vibeData'
 import type { VibeEntry } from './types'
 
@@ -56,114 +57,84 @@ export const VibeDetailModal = ({ item, onClose }: { item: VibeEntry; onClose: (
   const popoverLeft = popoverRect
     ? Math.min(popoverRect.right - popoverWidth, window.innerWidth - popoverWidth - 8)
     : 0
-  const popoverTop = popoverRect
-    ? popoverRect.bottom + 6
-    : 0
+  const popoverTop = popoverRect ? popoverRect.bottom + 6 : 0
 
   return (
     <>
-      <motion.div
-        className="fixed inset-0 z-30 bg-black/40"
-        style={{ backdropFilter: 'blur(10px) grayscale(1)' }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      />
-      <div className="fixed inset-0 z-40 flex items-center justify-center p-6 pointer-events-none">
-        <motion.div
-          className="bg-card rounded-3xl w-full max-w-sm shadow-2xl pointer-events-auto overflow-hidden"
-          initial={{ opacity: 0, scale: 0.86, y: 12 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.86, y: 12 }}
-          transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-        >
-          <div className="flex items-center gap-3 p-5 pb-4">
-            <item.Icon size={26} color={CATEGORY_COLOR.get(item.Icon)} weight="fill" className="shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate">{item.title}</p>
-              <p className="text-xs text-muted-foreground">{item.meta}</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0 hover:opacity-70 transition-opacity"
-            >
-              <XIcon size={15} />
-            </button>
-          </div>
-
-          <div className="mx-5 flex items-center gap-2">
-            <div className="h-px flex-1 border-t border-dashed border-border" />
-            <div className="-mx-7 w-4 h-4 rounded-full bg-background shrink-0" />
-            <div className="h-px flex-1 border-t border-dashed border-border" />
-            <div className="-mx-7 w-4 h-4 rounded-full bg-background shrink-0" />
-          </div>
-
-          <div className="px-5 pt-4 pb-6 space-y-3 max-h-[50vh] overflow-y-auto">
-            {reviews.map((r, i) => (
-              <div key={i}>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-0.5 flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-muted-foreground">{r.user}</p>
-                    {r.user === 'Me' && (
-                      <>
-                        {editingIdx === i ? (
-                          <button onClick={() => saveEdit(i)} className="p-1 text-primary hover:opacity-70 transition-opacity">
-                            <CheckIcon size={14} />
-                          </button>
-                        ) : (
-                          <button onClick={() => startEdit(i)} className="p-1 text-muted-foreground hover:text-foreground transition-colors">
-                            <PencilIcon size={14} />
-                          </button>
-                        )}
-                                        <button onClick={() => setConfirmDeleteIdx(i)} className="p-1 text-muted-foreground hover:text-destructive transition-colors">
-                          <TrashIcon size={14} />
+      <ModalCard
+        icon={<item.Icon size={26} color={CATEGORY_COLOR.get(item.Icon)} weight="fill" className="shrink-0" />}
+        title={item.title}
+        subtitle={item.meta}
+        onClose={onClose}
+      >
+        <div className="px-5 pt-4 pb-6 space-y-3 max-h-[50vh] overflow-y-auto">
+          {reviews.map((r, i) => (
+            <div key={i}>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5 flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-muted-foreground">{r.user}</p>
+                  {r.user === 'Me' && (
+                    <>
+                      {editingIdx === i ? (
+                        <button onClick={() => saveEdit(i)} className="p-1 text-primary hover:opacity-70 transition-opacity">
+                          <CheckIcon size={14} />
                         </button>
-                      </>
-                    )}
-                  </div>
-                  {r.user === 'Me' ? (
-                    <button
-                      className="text-xl leading-none shrink-0 hover:scale-110 transition-transform active:scale-95"
-                      onClick={(e) => toggleEmojiPicker(i, e)}
-                    >
-                      {r.emoji}
-                    </button>
-                  ) : (
-                    <span className="text-xl leading-none shrink-0">{r.emoji}</span>
+                      ) : (
+                        <button onClick={() => startEdit(i)} className="p-1 text-muted-foreground hover:text-foreground transition-colors">
+                          <PencilIcon size={14} />
+                        </button>
+                      )}
+                      <button onClick={() => setConfirmDeleteIdx(i)} className="p-1 text-muted-foreground hover:text-destructive transition-colors">
+                        <TrashIcon size={14} />
+                      </button>
+                    </>
                   )}
                 </div>
-                {editingIdx === i ? (
-                  <textarea
-                    value={editText}
-                    onChange={(e) => setEditText(e.target.value)}
-                    className="w-full text-sm bg-muted rounded-lg px-2 py-1.5 mt-1 outline-none resize-none"
-                    rows={2}
-                    autoFocus
-                  />
+                {r.user === 'Me' ? (
+                  <button
+                    className="text-xl leading-none shrink-0 hover:scale-110 transition-transform active:scale-95"
+                    onClick={(e) => toggleEmojiPicker(i, e)}
+                  >
+                    {r.emoji}
+                  </button>
                 ) : (
-                  <p className="text-sm text-muted-foreground mt-0.5">{r.note}</p>
+                  <span className="text-xl leading-none shrink-0">{r.emoji}</span>
                 )}
               </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
+              {editingIdx === i ? (
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="w-full text-sm bg-muted rounded-lg px-2 py-1.5 mt-1 outline-none resize-none"
+                  rows={2}
+                  autoFocus
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground mt-0.5">{r.note}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </ModalCard>
 
       <ConfirmActionSheet
         open={confirmDeleteIdx !== null}
         message="Remove your review?"
+        overlayZIndex={62}
+        zIndex={63}
         onConfirm={() => deleteReview(confirmDeleteIdx!)}
         onCancel={() => setConfirmDeleteIdx(null)}
       />
 
-      {/* Emoji popover — fixed, escapes overflow-hidden */}
       <AnimatePresence>
         {emojiPickerIdx !== null && popoverRect && (
           <>
-            <div className="fixed inset-0 z-[45]" onClick={() => { setEmojiPickerIdx(null); setPopoverRect(null) }} />
+            <div
+              className="fixed inset-0 z-[62]"
+              onClick={() => { setEmojiPickerIdx(null); setPopoverRect(null) }}
+            />
             <motion.div
-              className="fixed z-[46] grid grid-cols-5 gap-1 bg-card border border-border/50 rounded-2xl p-3 shadow-xl"
+              className="fixed z-[63] grid grid-cols-5 gap-1 bg-card border border-border/50 rounded-2xl p-3 shadow-xl"
               style={{ top: popoverTop, left: popoverLeft, width: popoverWidth }}
               initial={{ opacity: 0, scale: 0.92, y: -4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
