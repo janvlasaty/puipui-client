@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 import { VibeDetailModal } from '../components/vibes/VibeDetailModal'
 import { CreatePoiReviewPopup } from '../components/map/CreatePoiReviewPopup'
 import { CreatePoiSheet } from '../components/map/CreatePoiSheet'
+import { CreateVibeReviewPopup } from '../components/vibes/CreateVibeReviewPopup'
 import { findOrCreatePoi, createPoiReview } from '../repositories/pois.repository'
 import { useAuth } from '../hooks/useAuth'
 import { useToast } from './ToastContext'
@@ -31,6 +32,7 @@ export interface PoiReviewConfig {
 type ModalState =
   | { kind: 'vibe-detail'; item: VibeEntry }
   | { kind: 'poi-review'; config: PoiReviewConfig }
+  | { kind: 'vibe-review' }
   | null
 
 interface OverlayContextValue {
@@ -39,6 +41,7 @@ interface OverlayContextValue {
   closePoiSheet: () => void
   openVibeDetail: (item: VibeEntry) => void
   openPoiReview: (config: PoiReviewConfig) => void
+  openVibeReview: () => void
   closeModal: () => void
 }
 
@@ -66,6 +69,7 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
   const closePoiSheet = () => setSheet((prev) => ({ ...prev, open: false }))
   const openVibeDetail = (item: VibeEntry) => setModal({ kind: 'vibe-detail', item })
   const openPoiReview = (config: PoiReviewConfig) => setModal({ kind: 'poi-review', config })
+  const openVibeReview = () => setModal({ kind: 'vibe-review' })
   const closeModal = () => setModal(null)
 
   const handleSubmitReview = async (
@@ -109,9 +113,32 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  const handleSubmitVibeReview = async (data: {
+    category: string
+    title: string
+    meta: string
+    emoji: string
+    note: string
+  }) => {
+    if (!session?.user?.id) {
+      showToast('You must be logged in to add a vibe')
+      return
+    }
+    try {
+      // TODO: Connect to backend when vibe review API is ready
+      // For now, just show success message
+      console.log('Vibe review submitted:', data)
+      showToast('Vibe added successfully! ✨')
+      closeModal()
+    } catch (err) {
+      console.error('Error submitting vibe review:', err)
+      showToast('Failed to add vibe. Please try again.')
+    }
+  }
+
   return (
     <OverlayContext.Provider
-      value={{ openPoiSheet, updatePoiSheet, closePoiSheet, openVibeDetail, openPoiReview, closeModal }}
+      value={{ openPoiSheet, updatePoiSheet, closePoiSheet, openVibeDetail, openPoiReview, openVibeReview, closeModal }}
     >
       {children}
 
@@ -132,6 +159,13 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
             longitude={modal.config.longitude}
             onClose={closeModal}
             onSubmit={(data) => handleSubmitReview(data, modal.config.onSuccess)}
+          />
+        )}
+        {modal?.kind === 'vibe-review' && (
+          <CreateVibeReviewPopup
+            key="vibe-review"
+            onClose={closeModal}
+            onSubmit={handleSubmitVibeReview}
           />
         )}
       </AnimatePresence>
