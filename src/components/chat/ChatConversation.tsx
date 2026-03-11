@@ -1,4 +1,4 @@
-import { UserIcon, DotsThreeOutlineIcon, MapPinIcon, ChartBarHorizontalIcon, ReceiptIcon, ChatCenteredTextIcon, LinkIcon } from '@phosphor-icons/react'
+import { UserIcon, DotsThreeOutlineIcon, MapPinIcon, ChartBarHorizontalIcon, ReceiptIcon, ChatCenteredTextIcon, LinkIcon, EyeSlash, Eye, Plus } from '@phosphor-icons/react'
 import { ChatBubble } from './ChatBubble'
 import { PageHeader } from '../PageHeader'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
@@ -61,6 +61,8 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   const [menuOpen, setMenuOpen] = useState(false)
   const [addingTopic, setAddingTopic] = useState(false)
   const [newTopicLabel, setNewTopicLabel] = useState('')
+  const [topicsBarHidden, setTopicsBarHidden] = useState(false)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
   const newTopicInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -155,6 +157,34 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
     }
   }
 
+  // Swipe to switch topics
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX)
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart || !topics || topics.length === 0) return
+
+    const touchEnd = e.changedTouches[0].clientX
+    const diff = touchStart - touchEnd
+    const threshold = 50 // minimum swipe distance
+
+    if (Math.abs(diff) > threshold) {
+      const allTopics = [null, ...topics.map(t => t.id)]
+      const currentIndex = allTopics.findIndex(id => id === selectedTopicId)
+
+      if (diff > 0 && currentIndex < allTopics.length - 1) {
+        // Swipe left - next topic
+        onTopicSelect?.(allTopics[currentIndex + 1])
+      } else if (diff < 0 && currentIndex > 0) {
+        // Swipe right - previous topic
+        onTopicSelect?.(allTopics[currentIndex - 1])
+      }
+    }
+
+    setTouchStart(null)
+  }
+
   return (
     <div className="h-screen bg-background flex flex-col">
       <PageHeader
@@ -176,6 +206,8 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
       <div
         ref={scrollContainerRef}
         className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y flex flex-col justify-end pt-16"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <div className="max-w-2xl mx-auto w-full pt-20 pb-4 px-4">
           {/* Load-more spinner */}
@@ -205,8 +237,19 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
       <div className="bg-background border-t border-border relative">
         {/* Topics bar */}
         {topics !== undefined && (
-          <div className="flex items-stretch border-b border-border">
-            <div className="flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div
+            className={`flex items-stretch border-b border-border transition-all duration-300 overflow-hidden ${
+              topicsBarHidden ? 'max-h-0 opacity-0 border-b-0' : 'max-h-16 opacity-100'
+            }`}
+          >
+            <button
+              onClick={() => setTopicsBarHidden(true)}
+              className="flex-shrink-0 px-3 text-muted-foreground hover:bg-muted transition-colors flex items-center"
+              aria-label="Hide topics"
+            >
+              <EyeSlash size={16} weight="regular" />
+            </button>
+            <div className="flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex justify-center">
               <div className="flex gap-1 px-3 py-2 w-max">
                 <button
                   onClick={() => onTopicSelect?.(null)}
@@ -232,39 +275,55 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                   </button>
                 ))}
                 {addingTopic && (
-                  <input
-                    ref={newTopicInputRef}
-                    autoFocus
-                    value={newTopicLabel}
-                    onChange={(e) => setNewTopicLabel(e.target.value)}
-                    onKeyDown={async (e) => {
-                      if (e.key === 'Enter') {
-                        const label = newTopicLabel.trim()
-                        if (label) {
-                          await onAddTopic?.(label)
+                  <div className="flex gap-1 items-center">
+                    <input
+                      ref={newTopicInputRef}
+                      autoFocus
+                      value={newTopicLabel}
+                      onChange={(e) => setNewTopicLabel(e.target.value)}
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          const label = newTopicLabel.trim()
+                          if (label) {
+                            await onAddTopic?.(label)
+                          }
+                          setAddingTopic(false)
+                          setNewTopicLabel('')
+                        } else if (e.key === 'Escape') {
+                          setAddingTopic(false)
+                          setNewTopicLabel('')
                         }
+                      }}
+                      onBlur={() => {
                         setAddingTopic(false)
                         setNewTopicLabel('')
-                      } else if (e.key === 'Escape') {
-                        setAddingTopic(false)
-                        setNewTopicLabel('')
-                      }
-                    }}
-                    onBlur={() => {
-                      setAddingTopic(false)
-                      setNewTopicLabel('')
-                    }}
-                    placeholder="Topic name…"
-                    className="px-3 py-1 rounded-full text-xs border border-primary bg-transparent focus:outline-none w-28"
-                  />
+                      }}
+                      placeholder="Topic name…"
+                      className="px-3 py-1 rounded-full text-xs border border-primary bg-transparent focus:outline-none w-28"
+                    />
+                  </div>
                 )}
               </div>
             </div>
             <button
               onClick={() => setAddingTopic(true)}
-              className="flex-shrink-0 px-3 text-xs font-semibold text-primary border-l border-border hover:bg-muted transition-colors"
+              className="flex-shrink-0 px-3 text-muted-foreground hover:bg-muted transition-colors flex items-center"
+              aria-label="Add topic"
             >
-              +ADD
+              <Plus size={16} weight="regular" />
+            </button>
+          </div>
+        )}
+
+        {/* Show topics button when hidden */}
+        {topics !== undefined && topicsBarHidden && (
+          <div className="flex justify-center border-b border-border">
+            <button
+              onClick={() => setTopicsBarHidden(false)}
+              className="px-3 py-2 text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5 text-xs"
+            >
+              <Eye size={14} weight="regular" />
+              <span>Show topics</span>
             </button>
           </div>
         )}
@@ -301,14 +360,15 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
         )}
 
         <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2 items-center">
-          <button
-            onClick={() => setMenuOpen((o) => !o)}
-            className={`w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full transition-colors ${menuOpen ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
-          >
-            <DotsThreeOutlineIcon size={20} weight="fill" />
-          </button>
-
           <div className="flex-1 relative rounded-[20px] overflow-hidden border border-border bg-background focus-within:ring-2 focus-within:ring-primary">
+            {!inputMessage && (
+              <button
+                onClick={() => setMenuOpen((o) => !o)}
+                className={`absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full transition-colors z-10 ${menuOpen ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'}`}
+              >
+                <DotsThreeOutlineIcon size={20} weight="fill" />
+              </button>
+            )}
             <div
               ref={inputRef}
               contentEditable
@@ -326,10 +386,12 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                   handleSendMessage()
                 }
               }}
-              className="w-full px-4 py-2 bg-transparent focus:outline-none leading-normal min-h-[38px]"
+              className={`w-full py-2 bg-transparent focus:outline-none leading-normal min-h-[38px] ${
+                inputMessage ? 'px-4' : 'pl-11 pr-4'
+              }`}
             />
             {!inputMessage && (
-              <span className="absolute inset-0 flex items-center px-4 text-muted-foreground pointer-events-none select-none">
+              <span className="absolute left-11 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none select-none">
                 Type a message...
               </span>
             )}
