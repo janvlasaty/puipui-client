@@ -59,7 +59,7 @@ export const VibesPage = () => {
   }
   const handleSignOut = async () => { await supabase.auth.signOut() }
 
-  const { openVibeDetail } = useOverlay()
+  const { openVibeDetail, openVibeReview } = useOverlay()
   const [showAllReviews, setShowAllReviews] = useState(false)
   const [showFilter, setShowFilter] = useState(false)
   const filterBtnRef = useRef<HTMLDivElement>(null)
@@ -118,7 +118,7 @@ export const VibesPage = () => {
           </div>
         }
         right={
-          <HeaderButton variant="primary">
+          <HeaderButton variant="primary" onClick={openVibeReview}>
             <PlusIcon size={20} />
           </HeaderButton>
         }
