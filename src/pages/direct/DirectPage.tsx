@@ -21,6 +21,7 @@ export const DirectPage: React.FC<DirectPageProps> = ({
 }) => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(directChatRoomId ?? null)
   const onCloseRef = useRef(onCloseDirectChat)
+  const pushedHistoryRef = useRef(false)
   useEffect(() => { onCloseRef.current = onCloseDirectChat }, [onCloseDirectChat])
 
   useEffect(() => {
@@ -34,13 +35,18 @@ export const DirectPage: React.FC<DirectPageProps> = ({
   // Push a history entry when the chat opens so that the iOS swipe-from-left
   // edge gesture triggers popstate (which we handle) instead of browser navigation.
   useEffect(() => {
-    if (!selectedRoomId) return
+    if (!selectedRoomId) {
+      pushedHistoryRef.current = false
+      return
+    }
 
     window.history.pushState(null, '')
+    pushedHistoryRef.current = true
 
     const onPopState = () => {
       setSelectedRoomId(null)
       onCloseRef.current?.()
+      pushedHistoryRef.current = false
     }
 
     window.addEventListener('popstate', onPopState)
@@ -52,10 +58,9 @@ export const DirectPage: React.FC<DirectPageProps> = ({
     onOpenDirectChat?.(friend.id)
   }
 
-  // Route the back button through history.back() so it goes through the same
-  // popstate path as the iOS swipe gesture — no special-casing needed.
   const handleBackToList = () => {
-    window.history.back()
+    setSelectedRoomId(null)
+    onCloseDirectChat?.()
   }
 
   return (

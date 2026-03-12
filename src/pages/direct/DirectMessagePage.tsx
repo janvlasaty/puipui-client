@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { ChatConversation } from '../../components/chat/ChatConversation'
+import type { Enums } from '../../types/database'
 import { useAuth } from '../../hooks/useAuth'
-import { getMessagesByRoom, insertMessage, archiveMessage } from '../../repositories/messages.repository'
+import { getMessagesByRoom, getMessagesAfter, insertMessage, archiveMessage } from '../../repositories/messages.repository'
 import { getTopicsByRoom, createTopic } from '../../repositories/topics.repository'
 import { getRoomUsersWithProfiles } from '../../repositories/rooms.repository'
 import { decodeAvatar } from '../../lib/utils'
@@ -25,6 +26,7 @@ interface Message {
   senderName?: string
   avatar?: string
   createdAt?: Date
+  isNew?: boolean
 }
 
 function formatMessages(
@@ -32,6 +34,7 @@ function formatMessages(
   userId: string,
   friendName: string,
   friendAvatar: string,
+  newIds?: Set<string>,
 ): Message[] {
   return msgs.map((msg, index) => {
     const isSender = msg.user_id === userId
@@ -62,6 +65,7 @@ function formatMessages(
       senderName: isSender ? undefined : friendName,
       avatar: isSender ? undefined : friendAvatar,
       createdAt,
+      isNew: newIds?.has(msg.id) ?? false,
     }
   })
 }
@@ -82,8 +86,14 @@ export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, on
   const [friendName, setFriendName] = useState('')
   const [friendAvatar, setFriendAvatar] = useState('')
   const [topics, setTopics] = useState<Topic[]>([])
-  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null)
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(() => {
+    return sessionStorage.getItem(`puipui_topic_${roomId}`) ?? null
+  })
   const loadingMoreRef = useRef(false)
+  const isInitialLoadRef = useRef(true)
+  const rawMessagesRef = useRef<DbMessage[]>([])
+  rawMessagesRef.current = rawMessages
+  const newMessageIdsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
     const loadFriendData = async () => {
@@ -108,7 +118,7 @@ export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, on
   useEffect(() => {
     const fetchMessages = async () => {
       if (!roomId || !session?.user?.id) return
-      setLoading(true)
+      if (isInitialLoadRef.current) setLoading(true)
       try {
         const { data, error } = await getMessagesByRoom(roomId, selectedTopicId, PAGE_SIZE)
         if (error) throw error
@@ -119,13 +129,37 @@ export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, on
         console.error('Error fetching messages:', err)
       } finally {
         setLoading(false)
+        isInitialLoadRef.current = false
       }
     }
     fetchMessages()
   }, [roomId, session?.user?.id, selectedTopicId])
 
+  const POLL_INTERVAL = 5_000
+
+  useEffect(() => {
+    if (!roomId || !session?.user?.id) return
+    const poll = async () => {
+      const msgs = rawMessagesRef.current
+      if (msgs.length === 0) return
+      const latest = msgs[msgs.length - 1].created_at
+      const { data } = await getMessagesAfter(roomId, selectedTopicId, latest)
+      if (data && data.length > 0) {
+        setRawMessages((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id))
+          const incoming = (data as DbMessage[]).filter((m) => !existingIds.has(m.id))
+          if (incoming.length === 0) return prev
+          incoming.forEach((m) => newMessageIdsRef.current.add(m.id))
+          return [...prev, ...incoming]
+        })
+      }
+    }
+    const id = setInterval(poll, POLL_INTERVAL)
+    return () => clearInterval(id)
+  }, [roomId, session?.user?.id, selectedTopicId])
+
   const conversationMessages = useMemo(
-    () => formatMessages(rawMessages, session?.user?.id ?? '', friendName, friendAvatar),
+    () => formatMessages(rawMessages, session?.user?.id ?? '', friendName, friendAvatar, newMessageIdsRef.current),
     [rawMessages, session?.user?.id, friendName, friendAvatar],
   )
 
@@ -148,12 +182,15 @@ export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, on
     }
   }, [roomId, hasMore, rawMessages, selectedTopicId])
 
-  const handleSendMessage = async (message: string, type?: 'text' | 'link') => {
+  const handleSendMessage = async (message: string, type?: Enums<'type_message_type'>) => {
     if (!session?.user?.id) return
     try {
       const { data, error } = await insertMessage(roomId, session.user.id, message, type, selectedTopicId)
       if (error) throw error
-      if (data?.[0]) setRawMessages((prev) => [...prev, data[0] as DbMessage])
+      if (data?.[0]) {
+        newMessageIdsRef.current.add(data[0].id)
+        setRawMessages((prev) => [...prev, data[0] as DbMessage])
+      }
     } catch (err) {
       console.error('Error sending message:', err)
     }
@@ -221,7 +258,11 @@ export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, on
       hasMore={hasMore}
       topics={topics}
       selectedTopicId={selectedTopicId}
-      onTopicSelect={setSelectedTopicId}
+      onTopicSelect={(id) => {
+        setSelectedTopicId(id)
+        if (id) sessionStorage.setItem(`puipui_topic_${roomId}`, id)
+        else sessionStorage.removeItem(`puipui_topic_${roomId}`)
+      }}
       onAddTopic={handleAddTopic}
     />
   )

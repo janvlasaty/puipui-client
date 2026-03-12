@@ -195,7 +195,7 @@ export type Database = {
       pois_reviews: {
         Row: {
           created_at: string
-          emoji: string
+          emoji: Database["public"]["Enums"]["type_emoji_char"]
           id: string
           note: string
           poi_id: string
@@ -203,7 +203,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          emoji: string
+          emoji: Database["public"]["Enums"]["type_emoji_char"]
           id?: string
           note: string
           poi_id: string
@@ -211,7 +211,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          emoji?: string
+          emoji?: Database["public"]["Enums"]["type_emoji_char"]
           id?: string
           note?: string
           poi_id?: string
@@ -368,7 +368,7 @@ export type Database = {
         Row: {
           archived_at: string | null
           created_at: string
-          emoji: string
+          emoji: Database["public"]["Enums"]["type_emoji_char"]
           emotion: string | null
           id: string
           updated_at: string | null
@@ -377,7 +377,7 @@ export type Database = {
         Insert: {
           archived_at?: string | null
           created_at?: string
-          emoji: string
+          emoji: Database["public"]["Enums"]["type_emoji_char"]
           emotion?: string | null
           id?: string
           updated_at?: string | null
@@ -386,7 +386,7 @@ export type Database = {
         Update: {
           archived_at?: string | null
           created_at?: string
-          emoji?: string
+          emoji?: Database["public"]["Enums"]["type_emoji_char"]
           emotion?: string | null
           id?: string
           updated_at?: string | null
@@ -437,6 +437,20 @@ export type Database = {
       get_user_in_room: { Args: { p_room_id: string }; Returns: boolean }
     }
     Enums: {
+      type_emoji_char:
+        | "😍"
+        | "🥰"
+        | "🤩"
+        | "😂"
+        | "🤗"
+        | "😢"
+        | "😔"
+        | "😠"
+        | "🤮"
+        | "❤️"
+        | "💔"
+        | "👍"
+        | "👎"
       type_message_type:
         | "text"
         | "link"
@@ -575,6 +589,21 @@ export const Constants = {
   },
   public: {
     Enums: {
+      type_emoji_char: [
+        "😍",
+        "🥰",
+        "🤩",
+        "😂",
+        "🤗",
+        "😢",
+        "😔",
+        "😠",
+        "🤮",
+        "❤️",
+        "💔",
+        "👍",
+        "👎",
+      ],
       type_message_type: [
         "text",
         "link",

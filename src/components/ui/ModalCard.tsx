@@ -22,11 +22,14 @@ export const ModalCard = ({ icon, title, subtitle, onClose, children }: ModalCar
     />
     <div className="fixed inset-0 z-[61] flex items-center justify-center p-6 pointer-events-none">
       <motion.div
-        className="bg-card rounded-3xl w-full max-w-sm shadow-2xl pointer-events-auto overflow-hidden"
+        className="bg-card rounded-3xl w-full max-w-sm shadow-2xl pointer-events-auto"
         initial={{ opacity: 0, scale: 0.86, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.86, y: 12 }}
         transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+        layout
+        layoutDependency={undefined}
+        style={{ originY: 0 }}
       >
         <div className="flex items-center gap-3 p-5 pb-4">
           {icon}
@@ -41,12 +44,7 @@ export const ModalCard = ({ icon, title, subtitle, onClose, children }: ModalCar
             <XIcon size={15} />
           </button>
         </div>
-        <div className="mx-5 flex items-center gap-2">
-          <div className="h-px flex-1 border-t border-dashed border-border" />
-          <div className="-mx-7 w-4 h-4 rounded-full bg-background shrink-0" />
-          <div className="h-px flex-1 border-t border-dashed border-border" />
-          <div className="-mx-7 w-4 h-4 rounded-full bg-background shrink-0" />
-        </div>
+        <div className="mx-5 border-t border-dashed border-border" />
         {children}
       </motion.div>
     </div>

@@ -5,8 +5,7 @@ import { ConfirmActionSheet } from '../ConfirmActionSheet'
 import { ModalCard } from '../ui/ModalCard'
 import { CATEGORY_COLOR } from './vibeData'
 import type { VibeEntry } from './types'
-
-const EMOJI_OPTIONS = ['😭', '🤩', '😍', '🤔', '😌', '🤯', '🔥', '✨', '😊', '😤', '🥲', '👏', '💯', '❤️', '😮', '🎉', '🫶', '🙌', '😱', '🤌']
+import { EMOJI_OPTIONS } from '../../utils/emojiOptions'
 
 export const VibeDetailModal = ({ item, onClose }: { item: VibeEntry; onClose: () => void }) => {
   const [reviews, setReviews] = useState(() =>

@@ -1,5 +1,7 @@
 import * as React from 'react'
+import { motion } from 'framer-motion'
 import { ArrowBendUpLeftIcon, SmileyIcon, TrashIcon } from '@phosphor-icons/react'
+import { parseMessageLinks } from '../../utils/messageParser'
 
 interface ChatBubbleProps {
   message: string
@@ -8,6 +10,7 @@ interface ChatBubbleProps {
   showTimestamp: boolean
   showSenderName: boolean
   senderName?: string
+  isNew?: boolean
   onReply?: () => void
   onReact?: () => void
   onDelete?: () => void
@@ -36,6 +39,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   showTimestamp,
   showSenderName,
   senderName,
+  isNew = false,
   onReply,
   onReact,
   onDelete,
@@ -63,7 +67,12 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   }
 
   return (
-    <div className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'} ${showTimestamp ? 'mb-4' : 'mb-1'}`}>
+    <motion.div
+      className={`flex ${isUserMessage ? 'justify-end' : 'justify-start'} ${showTimestamp ? 'mb-4' : 'mb-1'}`}
+      initial={isNew ? { opacity: 0, y: 12, scale: 0.94 } : false}
+      animate={isNew ? { opacity: 1, y: 0, scale: 1 } : undefined}
+      transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.7 }}
+    >
       {menuOpen && (
         <div
           className="fixed inset-0 z-40"
@@ -121,7 +130,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
               onPointerCancel={cancelPress}
               onContextMenu={(e) => e.preventDefault()}
             >
-              <p className="text-sm leading-relaxed break-words">{message}</p>
+              <p className="text-sm leading-relaxed break-words">{parseMessageLinks(message)}</p>
             </div>
           </div>
 
@@ -130,6 +139,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

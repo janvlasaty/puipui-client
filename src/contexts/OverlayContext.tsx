@@ -9,6 +9,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useToast } from './ToastContext'
 import type { VibeEntry } from '../components/vibes/types'
 import type { PoiCategory } from '../components/map/mapCategories'
+import type { Enums } from '../types/database'
 import type { MapboxFeature } from '../utils/mapFetches'
 
 export interface PoiSheetConfig {
@@ -99,7 +100,7 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
       const { error: reviewError } = await createPoiReview(
         poiData.id,
         session.user.id,
-        data.emoji,
+        data.emoji as Enums<'type_emoji_char'>,
         data.note
       )
       if (reviewError) throw new Error(reviewError.message)

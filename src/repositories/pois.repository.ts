@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
 
 type PoiCategory = Database['public']['Enums']['type_poi_category']
+type EmojiChar = Database['public']['Enums']['type_emoji_char']
 
 export interface MapBounds {
   minLng: number
@@ -72,7 +73,7 @@ export const createPoi = async (
 export const createPoiReview = async (
   poiId: string,
   userId: string,
-  emoji: string,
+  emoji: EmojiChar,
   note: string
 ) => {
   return supabase

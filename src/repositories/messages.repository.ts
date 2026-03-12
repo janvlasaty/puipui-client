@@ -26,6 +26,22 @@ export const getMessagesByRoom = (
   return limit !== undefined ? withBefore.limit(limit) : withBefore
 }
 
+export const getMessagesAfter = (
+  roomId: string,
+  topicId: string | null = null,
+  after: string,
+) => {
+  const query = supabase
+    .from('messages')
+    .select('*')
+    .eq('room_id', roomId)
+    .gt('created_at', after)
+    .order('created_at', { ascending: true })
+
+  const withTopic = topicId === null ? query.is('topic_id', null) : query.eq('topic_id', topicId)
+  return withTopic.is('archived_at', null)
+}
+
 export const archiveMessage = (id: string) =>
   supabase
     .from('messages')

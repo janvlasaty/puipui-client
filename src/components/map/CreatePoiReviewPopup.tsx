@@ -3,8 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { MAP_CATEGORIES } from './mapCategories'
 import { ModalCard } from '../ui/ModalCard'
 import type { PoiCategory } from './mapCategories'
-
-const EMOJI_OPTIONS = ['😭', '🤩', '😍', '🤔', '😌', '🤯', '🔥', '✨', '😊', '😤', '🥲', '👏', '💯', '❤️', '😮', '🎉', '🫶', '🙌', '😱', '🤌']
+import { EMOJI_OPTIONS, type EmojiOption } from '../../utils/emojiOptions'
 
 export interface CreatePoiReviewPopupProps {
   mode: 'existing' | 'new'
@@ -18,7 +17,7 @@ export interface CreatePoiReviewPopupProps {
   onSubmit: (data: {
     name: string
     category: PoiCategory
-    emoji: string
+    emoji: EmojiOption
     note: string
     latitude: number
     longitude: number
@@ -35,7 +34,7 @@ export const CreatePoiReviewPopup = ({
 }: CreatePoiReviewPopupProps) => {
   const [name, setName] = useState(existingPoiData?.name || '')
   const [category, setCategory] = useState<PoiCategory | null>(existingPoiData?.category || null)
-  const [emoji, setEmoji] = useState<string | null>(null)
+  const [emoji, setEmoji] = useState<EmojiOption | null>(null)
   const [note, setNote] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)

@@ -1,10 +1,23 @@
-import { UserIcon, DotsThreeOutlineIcon, MapPinIcon, ChartBarHorizontalIcon, ReceiptIcon, ChatCenteredTextIcon, LinkIcon, EyeSlash, Eye, Plus } from '@phosphor-icons/react'
+import { UserIcon, DotsThreeOutlineIcon, MapPinIcon, ChartBarHorizontalIcon, ReceiptIcon, ChatCenteredTextIcon, GhostIcon,LinkIcon, EyeSlashIcon, PlusIcon } from '@phosphor-icons/react'
 import { ChatBubble } from './ChatBubble'
 import { PageHeader } from '../PageHeader'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { CreatePollModal } from './CreatePollModal'
+import { CreateExpenseModal, type Participant } from './CreateExpenseModal'
+import { ShareLocationModal } from './ShareLocationModal'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import type { Enums } from '../../types/database'
 
 const URL_RE = /^https?:\/\/[^\s/$.?#].[^\s]*$/i
 const isUrl = (text: string) => URL_RE.test(text.trim())
+
+// Slides panels in/out like iOS multitasking. `custom` is 1 (forward) or -1 (backward).
+const slideVariants = {
+  enter: (dir: number) => ({ x: dir > 0 ? '100%' : '-100%' }),
+  center: { x: 0 },
+  exit:  (dir: number) => ({ x: dir > 0 ? '-100%' : '100%' }),
+}
+const slideTransition = { type: 'spring' as const, stiffness: 350, damping: 35, mass: 0.8 }
 
 interface Message {
   id: string
@@ -15,6 +28,7 @@ interface Message {
   showSenderName: boolean
   senderName?: string
   avatar?: string
+  isNew?: boolean
 }
 
 interface Topic {
@@ -27,7 +41,7 @@ interface ChatConversationProps {
   friendAvatar: string
   messages: Message[]
   onBack: () => void
-  onSendMessage: (message: string, type?: 'text' | 'link') => void
+  onSendMessage: (message: string, type?: Enums<'type_message_type'>) => void
   onDeleteMessage?: (id: string) => void
   roomId?: string
   onLoadMore?: () => void
@@ -37,6 +51,7 @@ interface ChatConversationProps {
   selectedTopicId?: string | null
   onTopicSelect?: (topicId: string | null) => void
   onAddTopic?: (label: string) => Promise<void>
+  participants?: Participant[]
 }
 
 const draftKey = (roomId: string) => `puipui_draft_${roomId}`
@@ -56,16 +71,25 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   selectedTopicId,
   onTopicSelect,
   onAddTopic,
+  participants,
 }) => {
   const [inputMessage, setInputMessage] = React.useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [activeModal, setActiveModal] = useState<null | 'poll' | 'expense' | 'location'>(null)
   const [addingTopic, setAddingTopic] = useState(false)
   const [newTopicLabel, setNewTopicLabel] = useState('')
   const [topicsBarHidden, setTopicsBarHidden] = useState(false)
   const [touchStart, setTouchStart] = useState<number | null>(null)
+  // Tracks the current scroll panel so the listener re-registers when the topic changes
+  const [scrollNode, setScrollNode] = useState<HTMLDivElement | null>(null)
   const newTopicInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLDivElement>(null)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  // Synchronous pointer to the scroll container (used by useLayoutEffect)
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null)
+  const topicsScrollRef = useRef<HTMLDivElement>(null)
+  // 1 = forward (new panel from right), -1 = backward (new panel from left)
+  const topicDirectionRef = useRef(1)
   // Saved scroll data before a prepend so we can restore position after
   const prependAnchorRef = useRef<{ scrollHeight: number; scrollTop: number } | null>(null)
   const isInitialRef = useRef(true)
@@ -74,9 +98,21 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   const onLoadMoreRef = useRef(onLoadMore)
   const isLoadingMoreRef = useRef(isLoadingMore)
   const hasMoreRef = useRef(hasMore)
+  const addingTopicRef = useRef(addingTopic)
   onLoadMoreRef.current = onLoadMore
   isLoadingMoreRef.current = isLoadingMore
   hasMoreRef.current = hasMore
+  addingTopicRef.current = addingTopic
+
+  // Called when a new topic panel mounts. Null calls (exiting panels) are ignored.
+  const scrollCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return
+    scrollContainerRef.current = node
+    setScrollNode(node)
+    isInitialRef.current = true
+    prevLengthRef.current = 0
+    prependAnchorRef.current = null
+  }, [])
 
   // Manage scroll on message changes:
   //  - Initial load  → jump to bottom instantly
@@ -109,16 +145,16 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   }, [messages])
 
   // Scroll listener: trigger load-more when user scrolls near the top.
-  // Registered once; uses refs to read latest prop values without re-registering.
+  // Re-registers whenever the scroll panel changes (new topic mounted).
   useEffect(() => {
-    const c = scrollContainerRef.current
+    const c = scrollNode
     if (!c) return
     const onScroll = () => {
       if (
         c.scrollTop < 100 &&
         hasMoreRef.current &&
         !isLoadingMoreRef.current &&
-        prependAnchorRef.current === null // don't double-trigger while one is in flight
+        prependAnchorRef.current === null
       ) {
         prependAnchorRef.current = { scrollHeight: c.scrollHeight, scrollTop: c.scrollTop }
         onLoadMoreRef.current?.()
@@ -126,7 +162,67 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
     }
     c.addEventListener('scroll', onScroll, { passive: true })
     return () => c.removeEventListener('scroll', onScroll)
-  }, []) // empty — intentional, reads latest values via refs
+  }, [scrollNode])
+
+  const scrollTopicsToSelected = (container: HTMLDivElement, duration = 300) => {
+    const selected = container.querySelector('[data-selected="true"]') as HTMLElement
+    if (!selected) return
+    const target = selected.offsetLeft + selected.offsetWidth / 2 - container.offsetWidth / 2
+    const start = container.scrollLeft
+    const delta = target - start
+    if (Math.abs(delta) < 1) return
+    const startTime = performance.now()
+    const ease = (t: number) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t
+    const step = (now: number) => {
+      const t = Math.min((now - startTime) / duration, 1)
+      container.scrollLeft = start + delta * ease(t)
+      if (t < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }
+
+  // Scroll selected topic to center on topic change
+  useEffect(() => {
+    const container = topicsScrollRef.current
+    if (!container || addingTopicRef.current) return
+    scrollTopicsToSelected(container)
+  }, [selectedTopicId])
+
+  // Re-center after 5s of scroll inactivity (desktop)
+  useEffect(() => {
+    const container = topicsScrollRef.current
+    if (!container) return
+    let timer: ReturnType<typeof setTimeout>
+    const onScroll = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => { if (!addingTopicRef.current) scrollTopicsToSelected(container, 1200) }, 3000)
+    }
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+        e.preventDefault()
+        container.scrollLeft += e.deltaY
+      }
+    }
+    container.addEventListener('scroll', onScroll, { passive: true })
+    container.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      container.removeEventListener('scroll', onScroll)
+      container.removeEventListener('wheel', onWheel)
+      clearTimeout(timer)
+    }
+  }, [])
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!menuOpen) return
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [menuOpen])
 
   // Restore draft on mount
   useEffect(() => {
@@ -157,6 +253,15 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
     }
   }
 
+  // Select topic with direction tracking for the slide animation
+  const handleTopicSelect = (topicId: string | null) => {
+    const allTopics = [null as string | null, ...(topics ?? []).map(t => t.id)]
+    const currentIdx = allTopics.findIndex(id => id === (selectedTopicId ?? null))
+    const nextIdx = allTopics.findIndex(id => id === topicId)
+    topicDirectionRef.current = nextIdx >= currentIdx ? 1 : -1
+    onTopicSelect?.(topicId)
+  }
+
   // Swipe to switch topics
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.touches[0].clientX)
@@ -167,17 +272,17 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
 
     const touchEnd = e.changedTouches[0].clientX
     const diff = touchStart - touchEnd
-    const threshold = 50 // minimum swipe distance
+    const threshold = 50
 
     if (Math.abs(diff) > threshold) {
-      const allTopics = [null, ...topics.map(t => t.id)]
-      const currentIndex = allTopics.findIndex(id => id === selectedTopicId)
+      const allTopics = [null as string | null, ...topics.map(t => t.id)]
+      const currentIndex = allTopics.findIndex(id => id === (selectedTopicId ?? null))
 
       if (diff > 0 && currentIndex < allTopics.length - 1) {
-        // Swipe left - next topic
+        topicDirectionRef.current = 1
         onTopicSelect?.(allTopics[currentIndex + 1])
       } else if (diff < 0 && currentIndex > 0) {
-        // Swipe right - previous topic
+        topicDirectionRef.current = -1
         onTopicSelect?.(allTopics[currentIndex - 1])
       }
     }
@@ -186,6 +291,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   }
 
   return (
+    <>
     <div className="h-screen bg-background flex flex-col">
       <PageHeader
         onBack={onBack}
@@ -203,79 +309,107 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
         }
       />
 
+      {/* Clips the slide animation. Touch events here so they work during transition. */}
       <div
-        ref={scrollContainerRef}
-        className="flex-1 overflow-y-scroll overscroll-contain touch-pan-y flex flex-col justify-end pt-16"
+        className="flex-1 relative overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="max-w-2xl mx-auto w-full pt-20 pb-4 px-4">
-          {/* Load-more spinner */}
-          {hasMore && (
-            <div className="flex justify-center py-3">
-              {isLoadingMore && (
-                <span className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+        <AnimatePresence custom={topicDirectionRef.current} initial={false}>
+          <motion.div
+            key={selectedTopicId ?? '__null__'}
+            custom={topicDirectionRef.current}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={slideTransition}
+            className="absolute inset-0"
+          >
+            <div
+              ref={scrollCallbackRef}
+              className="h-full overflow-y-scroll overscroll-contain touch-pan-y flex flex-col justify-end pt-16"
+            >
+            <div className="max-w-2xl mx-auto w-full pt-20 pb-0 px-4">
+              {hasMore && (
+                <div className="flex justify-center py-3">
+                  {isLoadingMore && (
+                    <span className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                  )}
+                </div>
               )}
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground/40">
+                  <GhostIcon size={48} weight="thin" />
+                  <span className="text-sm">No messages yet</span>
+                </div>
+              )}
+              {messages.map((message) => (
+                <ChatBubble
+                  key={message.id}
+                  message={message.text}
+                  sender={message.sender}
+                  timestamp={message.timestamp}
+                  showTimestamp={message.showTimestamp}
+                  showSenderName={message.showSenderName}
+                  senderName={message.senderName}
+                  isNew={message.isNew}
+                  onDelete={onDeleteMessage ? () => onDeleteMessage(message.id) : undefined}
+                />
+              ))}
             </div>
-          )}
-
-          {messages.map((message) => (
-            <ChatBubble
-              key={message.id}
-              message={message.text}
-              sender={message.sender}
-              timestamp={message.timestamp}
-              showTimestamp={message.showTimestamp}
-              showSenderName={message.showSenderName}
-              senderName={message.senderName}
-              onDelete={onDeleteMessage ? () => onDeleteMessage(message.id) : undefined}
-            />
-          ))}
-        </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <div className="bg-background border-t border-border relative">
         {/* Topics bar */}
         {topics !== undefined && (
           <div
-            className={`flex items-stretch border-b border-border transition-all duration-300 overflow-hidden ${
-              topicsBarHidden ? 'max-h-0 opacity-0 border-b-0' : 'max-h-16 opacity-100'
+            className={`transition-all duration-300 overflow-hidden ${
+              topicsBarHidden ? 'max-h-0 opacity-0 py-0' : 'max-h-12 opacity-100 pt-2 pb-0.5'
             }`}
           >
+          <div className="max-w-2xl mx-auto w-full px-4 flex items-center gap-2">
             <button
               onClick={() => setTopicsBarHidden(true)}
-              className="flex-shrink-0 px-3 text-muted-foreground hover:bg-muted transition-colors flex items-center"
+              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
               aria-label="Hide topics"
             >
-              <EyeSlash size={16} weight="regular" />
+              <EyeSlashIcon size={14} weight="regular" />
             </button>
-            <div className="flex-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden flex justify-center">
-              <div className="flex gap-1 px-3 py-2 w-max">
-                <button
-                  onClick={() => onTopicSelect?.(null)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                    selectedTopicId === null || selectedTopicId === undefined
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-muted'
-                  }`}
-                >
-                  CHAT
-                </button>
-                {topics.map((t) => (
+            <div className="flex-1 relative overflow-hidden">
+              <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
+              <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
+              <div ref={topicsScrollRef} className={`[scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${topics.length > 0 ? 'overflow-x-auto' : 'overflow-x-hidden'}`}>
+                <div className="flex gap-4 w-max" style={{ paddingLeft: '50%', paddingRight: '50%' }}>
                   <button
-                    key={t.id}
-                    onClick={() => onTopicSelect?.(t.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-                      selectedTopicId === t.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted'
+                    data-selected={selectedTopicId === null || selectedTopicId === undefined ? 'true' : 'false'}
+                    onClick={() => handleTopicSelect(null)}
+                    className={`text-xs font-medium uppercase tracking-wide whitespace-nowrap transition-colors ${
+                      selectedTopicId === null || selectedTopicId === undefined
+                        ? 'text-primary'
+                        : 'text-muted-foreground'
                     }`}
                   >
-                    {t.label}
+                    CHAT
                   </button>
-                ))}
-                {addingTopic && (
-                  <div className="flex gap-1 items-center">
+                  {topics.map((t) => (
+                    <button
+                      key={t.id}
+                      data-selected={selectedTopicId === t.id ? 'true' : 'false'}
+                      onClick={() => handleTopicSelect(t.id)}
+                      className={`text-xs font-medium uppercase tracking-wide whitespace-nowrap transition-colors ${
+                        selectedTopicId === t.id
+                          ? 'text-primary'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                  {addingTopic && (
                     <input
                       ref={newTopicInputRef}
                       autoFocus
@@ -299,53 +433,20 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                         setNewTopicLabel('')
                       }}
                       placeholder="Topic name…"
-                      className="px-3 py-1 rounded-full text-xs border border-primary bg-transparent focus:outline-none w-28"
+                      className="text-xs uppercase tracking-wide border-b border-primary bg-transparent focus:outline-none w-24"
                     />
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
             <button
               onClick={() => setAddingTopic(true)}
-              className="flex-shrink-0 px-3 text-muted-foreground hover:bg-muted transition-colors flex items-center"
+              className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors"
               aria-label="Add topic"
             >
-              <Plus size={16} weight="regular" />
+              <PlusIcon size={14} weight="regular" />
             </button>
           </div>
-        )}
-
-        {/* Show topics button when hidden */}
-        {topics !== undefined && topicsBarHidden && (
-          <div className="flex justify-center border-b border-border">
-            <button
-              onClick={() => setTopicsBarHidden(false)}
-              className="px-3 py-2 text-muted-foreground hover:bg-muted transition-colors flex items-center gap-1.5 text-xs"
-            >
-              <Eye size={14} weight="regular" />
-              <span>Show topics</span>
-            </button>
-          </div>
-        )}
-
-        {/* Action menu popup */}
-        {menuOpen && (
-          <div className="absolute bottom-full left-4 mb-2 w-48 bg-popover border border-border rounded-2xl shadow-lg overflow-hidden z-20">
-            {[
-              { icon: <ChatCenteredTextIcon size={16} />, label: 'Show topics', onClick: () => {} },
-              { icon: <MapPinIcon size={16} />, label: 'Share location', onClick: () => {} },
-              { icon: <ChartBarHorizontalIcon size={16} />, label: 'Create poll', onClick: () => {} },
-              { icon: <ReceiptIcon size={16} />, label: 'Add expense', onClick: () => {} },
-            ].map(({ icon, label, onClick }, i, arr) => (
-              <button
-                key={label}
-                onClick={() => { onClick(); setMenuOpen(false) }}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors text-left${i < arr.length - 1 ? ' border-b border-border/50' : ''}`}
-              >
-                <span className="text-muted-foreground">{icon}</span>
-                {label}
-              </button>
-            ))}
           </div>
         )}
 
@@ -359,8 +460,27 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
           </div>
         )}
 
-        <div className="max-w-2xl mx-auto w-full px-4 py-4 flex gap-2 items-center">
-          <div className="flex-1 relative rounded-[20px] overflow-hidden border border-border bg-background focus-within:ring-2 focus-within:ring-primary">
+        <div className="max-w-2xl mx-auto w-full px-4 pt-3 pb-4 flex gap-2 items-end">
+          <div ref={menuRef} className="flex-1 relative rounded-[20px] ring-1 ring-inset ring-border bg-background focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary">
+            {menuOpen && (
+              <div className="absolute bottom-full left-2 mb-2 w-48 bg-popover border border-border rounded-2xl shadow-lg overflow-hidden z-20">
+                {[
+                  ...(topics !== undefined ? [{ icon: <ChatCenteredTextIcon size={16} />, label: topicsBarHidden ? 'Show topics' : 'Hide topics', onClick: () => setTopicsBarHidden(h => !h) }] : []),
+                  { icon: <MapPinIcon size={16} />, label: 'Share location', onClick: () => setActiveModal('location') },
+                  { icon: <ChartBarHorizontalIcon size={16} />, label: 'Create poll', onClick: () => setActiveModal('poll') },
+                  { icon: <ReceiptIcon size={16} />, label: 'Add expense', onClick: () => setActiveModal('expense') },
+                ].map(({ icon, label, onClick }, i, arr) => (
+                  <button
+                    key={label}
+                    onClick={() => { onClick(); setMenuOpen(false) }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-foreground hover:bg-muted transition-colors text-left${i < arr.length - 1 ? ' border-b border-border/50' : ''}`}
+                  >
+                    <span className="text-muted-foreground">{icon}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
             {!inputMessage && (
               <button
                 onClick={() => setMenuOpen((o) => !o)}
@@ -369,14 +489,21 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                 <DotsThreeOutlineIcon size={20} weight="fill" />
               </button>
             )}
+            {!inputMessage && (
+              <span className="absolute left-11 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none select-none leading-[22px] text-sm">
+                Type a message...
+              </span>
+            )}
             <div
               ref={inputRef}
               contentEditable
               suppressContentEditableWarning
               role="textbox"
-              aria-multiline="false"
+              aria-multiline="true"
+              aria-label="Type a message"
               onInput={(e) => {
-                const text = e.currentTarget.innerText ?? ''
+                const raw = e.currentTarget.innerText
+                const text = raw === '\n' ? '' : raw.replace(/\n$/, '')
                 setInputMessage(text)
                 saveDraft(text)
               }}
@@ -386,15 +513,21 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                   handleSendMessage()
                 }
               }}
-              className={`w-full py-2 bg-transparent focus:outline-none leading-normal min-h-[38px] ${
-                inputMessage ? 'px-4' : 'pl-11 pr-4'
-              }`}
+              onPaste={(e) => {
+                e.preventDefault()
+                const text = e.clipboardData.getData('text/plain')
+                const sel = window.getSelection()
+                if (!sel?.rangeCount) return
+                const range = sel.getRangeAt(0)
+                range.deleteContents()
+                range.insertNode(document.createTextNode(text))
+                range.collapse(false)
+                sel.removeAllRanges()
+                sel.addRange(range)
+                inputRef.current?.dispatchEvent(new Event('input', { bubbles: true }))
+              }}
+              className={`w-full py-[9px] bg-transparent focus:outline-none leading-[22px] text-sm break-words overflow-y-auto max-h-40 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${inputMessage ? 'px-4' : 'pl-11 pr-4'}`}
             />
-            {!inputMessage && (
-              <span className="absolute left-11 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none select-none">
-                Type a message...
-              </span>
-            )}
           </div>
 
           <button
@@ -410,6 +543,29 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
         </div>
       </div>
     </div>
+
+    <AnimatePresence mode="wait">
+      {activeModal === 'poll' && (
+        <CreatePollModal
+          onClose={() => setActiveModal(null)}
+          onSend={(content) => { onSendMessage(content, 'poll'); setActiveModal(null) }}
+        />
+      )}
+      {activeModal === 'expense' && (
+        <CreateExpenseModal
+          onClose={() => setActiveModal(null)}
+          onSend={(content) => { onSendMessage(content, 'expense'); setActiveModal(null) }}
+          participants={participants}
+        />
+      )}
+      {activeModal === 'location' && (
+        <ShareLocationModal
+          onClose={() => setActiveModal(null)}
+          onSend={(content) => { onSendMessage(content, 'location'); setActiveModal(null) }}
+        />
+      )}
+    </AnimatePresence>
+    </>
   )
 }
 
