@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { Button } from '../components/ui/button'
 
 const BASE = import.meta.env.BASE_URL
 
 export const AuthPage = () => {
+  const { t } = useTranslation()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -24,7 +26,7 @@ export const AuthPage = () => {
     } else {
       const { error } = await supabase.auth.signUp({ email, password })
       if (error) setError(error.message)
-      else setSuccess('Check your email for a confirmation link.')
+      else setSuccess(t('auth.checkEmail'))
     }
 
     setLoading(false)
@@ -44,7 +46,7 @@ export const AuthPage = () => {
             PuiPui
           </span>
           <p className="text-muted-foreground text-sm">
-            {mode === 'signin' ? 'Sign in to your account' : 'Create a new account'}
+            {mode === 'signin' ? t('auth.signInToAccount') : t('auth.createNewAccount')}
           </p>
         </div>
 
@@ -52,7 +54,7 @@ export const AuthPage = () => {
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
             <label className="block text-sm font-medium mb-1.5" htmlFor="email">
-              Email
+              {t('auth.email')}
             </label>
             <input
               id="email"
@@ -66,7 +68,7 @@ export const AuthPage = () => {
           </div>
           <div>
             <label className="block text-sm font-medium mb-1.5" htmlFor="password">
-              Password
+              {t('auth.password')}
             </label>
             <input
               id="password"
@@ -87,19 +89,19 @@ export const AuthPage = () => {
           )}
 
           <Button type="submit" className="w-full mt-1" disabled={loading}>
-            {loading ? '...' : mode === 'signin' ? 'Sign in' : 'Sign up'}
+            {loading ? '...' : mode === 'signin' ? t('auth.signIn') : t('auth.signUp')}
           </Button>
         </form>
 
         {/* Toggle */}
         <p className="text-center text-sm text-muted-foreground mt-5">
-          {mode === 'signin' ? "Don't have an account?" : 'Already have an account?'}{' '}
+          {mode === 'signin' ? t('auth.dontHaveAccount') : t('auth.alreadyHaveAccount')}{' '}
           <button
             type="button"
             onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null); setSuccess(null) }}
             className="text-primary font-medium hover:underline"
           >
-            {mode === 'signin' ? 'Sign up' : 'Sign in'}
+            {mode === 'signin' ? t('auth.signUp') : t('auth.signIn')}
           </button>
         </p>
 

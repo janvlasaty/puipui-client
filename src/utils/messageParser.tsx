@@ -1,4 +1,55 @@
 import React from 'react'
+import { MapPinIcon, ChartBarHorizontalIcon, CoinsIcon, LinkIcon, ImageIcon } from '@phosphor-icons/react'
+import type { Enums } from '../types/database'
+
+const CURRENCY_SUFFIX = new Set(['CZK', 'PLN', 'HUF'])
+const CURRENCY_SYMBOL: Record<string, string> = {
+  USD: '$', EUR: '€', GBP: '£', CZK: 'Kč', PLN: 'zł',
+  HUF: 'Ft', CHF: 'Fr', SEK: 'kr', NOK: 'kr', DKK: 'kr',
+  CAD: 'CA$', AUD: 'A$', JPY: '¥', CNY: '¥', BRL: 'R$',
+}
+
+function PreviewRow({ icon, text }: { icon: React.ReactNode; text: string }) {
+  return (
+    <>
+      {icon}
+      <span className="truncate">{text}</span>
+    </>
+  )
+}
+
+const iconCls = 'text-primary flex-shrink-0'
+
+export function formatMessagePreview(content: string, type: Enums<'type_message_type'>): React.ReactNode {
+  switch (type) {
+    case 'location':
+      return <PreviewRow icon={<MapPinIcon size={13} className={iconCls} />} text="Location" />
+    case 'image':
+      return <PreviewRow icon={<ImageIcon size={13} className={iconCls} />} text="Image" />
+    case 'link':
+      return <PreviewRow icon={<LinkIcon size={13} className={iconCls} />} text={content} />
+    case 'poll': {
+      let question = 'Poll'
+      try { question = JSON.parse(content).question } catch { /* ignore */ }
+      return <PreviewRow icon={<ChartBarHorizontalIcon size={13} className={iconCls} />} text={question} />
+    }
+    case 'expense': {
+      let label = 'Expense'
+      try {
+        const { description, amount, currency } = JSON.parse(content)
+        const sym = CURRENCY_SYMBOL[currency]
+        const formatted = amount % 1 === 0 ? Number(amount).toFixed(0) : Number(amount).toFixed(2)
+        const amountStr = CURRENCY_SUFFIX.has(currency)
+          ? `${formatted} ${sym}`
+          : sym ? `${sym}${formatted}` : `${formatted} ${currency}`
+        label = `${description} · ${amountStr}`
+      } catch { /* ignore */ }
+      return <PreviewRow icon={<CoinsIcon size={13} className={iconCls} />} text={label} />
+    }
+    default:
+      return <span className="truncate">{content}</span>
+  }
+}
 
 // Matches (in priority order):
 //   1. https?://... full URLs

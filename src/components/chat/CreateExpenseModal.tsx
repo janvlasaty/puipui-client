@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
-import { ReceiptIcon } from '@phosphor-icons/react'
+import { CoinsIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { ModalCard } from '../ui/ModalCard'
 
 const CURRENCIES = ['USD', 'EUR', 'GBP', 'CZK', 'PLN', 'HUF', 'CHF', 'SEK', 'NOK', 'DKK', 'CAD', 'AUD', 'JPY', 'CNY', 'BRL']
@@ -16,9 +17,11 @@ interface CreateExpenseModalProps {
 }
 
 export const CreateExpenseModal = ({ onClose, onSend, participants }: CreateExpenseModalProps) => {
+  const { t } = useTranslation()
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('USD')
+  const [direction, setDirection] = useState<'lent' | 'borrowed'>('lent')
   const [included, setIncluded] = useState<Record<string, boolean>>(
     () => Object.fromEntries((participants ?? []).map((p) => [p.id, true]))
   )
@@ -49,6 +52,7 @@ export const CreateExpenseModal = ({ onClose, onSend, participants }: CreateExpe
       description: description.trim(),
       amount: parsedAmount,
       currency,
+      direction,
       ...(participants ? { splits: splits.map(({ userId, name, share }) => ({ userId, name, share })) } : {}),
     }))
     onClose()
@@ -56,20 +60,35 @@ export const CreateExpenseModal = ({ onClose, onSend, participants }: CreateExpe
 
   return (
     <ModalCard
-      icon={<ReceiptIcon size={18} className="text-primary" />}
-      title="Add expense"
+      icon={<CoinsIcon size={18} className="text-primary" />}
+      title={t('expense.addExpense')}
       onClose={onClose}
     >
       <div className="p-5 pt-4 space-y-4">
+        <div className="flex rounded-xl bg-muted p-1">
+          <button
+            onClick={() => setDirection('lent')}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${direction === 'lent' ? 'bg-primary text-white' : 'text-muted-foreground'}`}
+          >
+            {t('expense.iLent')}
+          </button>
+          <button
+            onClick={() => setDirection('borrowed')}
+            className={`flex-1 py-1.5 text-sm font-medium rounded-lg transition-colors ${direction === 'borrowed' ? 'bg-primary text-white' : 'text-muted-foreground'}`}
+          >
+            {t('expense.iBorrowed')}
+          </button>
+        </div>
+
         <div>
           <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">
-            For what
+            {t('expense.forWhat')}
           </label>
           <input
             autoFocus
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Dinner, groceries..."
+            placeholder={t('expense.forWhatPlaceholder')}
             className="w-full px-3 py-2 rounded-xl bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -77,7 +96,7 @@ export const CreateExpenseModal = ({ onClose, onSend, participants }: CreateExpe
         <div className="flex gap-2">
           <div className="flex-1">
             <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">
-              Amount
+              {t('expense.amount')}
             </label>
             <input
               type="number"
@@ -91,7 +110,7 @@ export const CreateExpenseModal = ({ onClose, onSend, participants }: CreateExpe
           </div>
           <div className="w-28">
             <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">
-              Currency
+              {t('expense.currency')}
             </label>
             <select
               value={currency}
@@ -108,7 +127,7 @@ export const CreateExpenseModal = ({ onClose, onSend, participants }: CreateExpe
         {participants && participants.length > 0 && (
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">
-              Split between
+              {t('expense.splitBetween')}
             </label>
             <div className="space-y-2">
               {participants.map((p) => (
@@ -154,7 +173,7 @@ export const CreateExpenseModal = ({ onClose, onSend, participants }: CreateExpe
           onClick={handleSend}
           className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-40 transition-opacity"
         >
-          Send expense
+          {t('expense.sendExpense')}
         </button>
       </div>
     </ModalCard>

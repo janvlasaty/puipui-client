@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion'
 import { PageHeader, HeaderButton } from '../components/PageHeader'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { PlusIcon, FunnelIcon } from '@phosphor-icons/react'
 import { CATEGORY_COLOR, CATEGORIES, RECENT_VIBES, MY_REVIEWS } from '../components/vibes/vibeData'
@@ -16,6 +17,7 @@ const ALL_CATEGORY_IDS = CATEGORIES.map((c) => c.id)
 export const VibesPage = () => {
   const { session: _session } = useAuth()
   const { profile: _profile } = useProfile()
+  const { t } = useTranslation()
 
   // Preserved book search state (hidden, not rendered)
   const [query, setQuery] = useState('')
@@ -130,7 +132,7 @@ export const VibesPage = () => {
           {/* Recents from friends */}
           <section>
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-              Recent friends' vibes
+              {t('vibes.recentFriendsVibes')}
             </h2>
             <div ref={carouselRef} className="overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden -mx-4 pl-4 snap-x snap-mandatory scroll-pl-4 pb-1" style={{ scrollbarWidth: 'none' } as React.CSSProperties}>
               <div className="flex gap-2 pr-4">
@@ -144,7 +146,7 @@ export const VibesPage = () => {
                     ))}
                   </div>
                 )) : (
-                  <p className="text-sm text-muted-foreground py-2 pl-0">No vibes match the active filters.</p>
+                  <p className="text-sm text-muted-foreground py-2 pl-0">{t('vibes.noVibesMatch')}</p>
                 )}
               </div>
             </div>
@@ -153,7 +155,7 @@ export const VibesPage = () => {
           {/* My last vibes */}
           <section>
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-              Me vibing
+              {t('vibes.meVibing')}
             </h2>
             <div className="overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden -mx-4 pl-4 snap-x snap-mandatory scroll-pl-4" style={{ scrollbarWidth: 'none' } as React.CSSProperties}>
               <div className="flex gap-2 pr-4">
@@ -170,14 +172,14 @@ export const VibesPage = () => {
               </div>
             </div>
             {filteredMy.length === 0 && (
-              <p className="text-sm text-muted-foreground py-2">No vibes match the active filters.</p>
+              <p className="text-sm text-muted-foreground py-2">{t('vibes.noVibesMatch')}</p>
             )}
             {filteredMy.length > 4 && (
               <button
                 onClick={() => setShowAllReviews((p) => !p)}
                 className="mt-2 w-full text-xs text-muted-foreground hover:text-foreground py-2 transition-colors"
               >
-                {showAllReviews ? 'Show less' : `Load more (${filteredMy.length - 4} more)`}
+                {showAllReviews ? t('vibes.showLess') : t('vibes.loadMore', { count: filteredMy.length - 4 })}
               </button>
             )}
           </section>
@@ -185,7 +187,7 @@ export const VibesPage = () => {
           {/* Categories */}
           <section>
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">
-              Browse categories
+              {t('vibes.browseCategories')}
             </h2>
             <div className="flex gap-4 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden -mx-4 px-4" style={{ scrollbarWidth: 'none' } as React.CSSProperties}>
               {CATEGORIES.map((cat) => (
@@ -196,7 +198,7 @@ export const VibesPage = () => {
                   <div className="w-16 h-16 rounded-full bg-card border border-border/50 flex items-center justify-center transition-transform active:scale-95 hover:scale-105">
                     <cat.Icon size={22} color={CATEGORY_COLOR.get(cat.Icon)} weight="fill" />
                   </div>
-                  <span className="text-xs font-medium w-16 text-center truncate">{cat.label}</span>
+                  <span className="text-xs font-medium w-16 text-center truncate">{t(`vibeCategory.${cat.id}`)}</span>
                 </button>
               ))}
             </div>
@@ -208,7 +210,7 @@ export const VibesPage = () => {
       <AnimatePresence>
         {showFilter && (
           <CategoryFilterPopup
-            categories={CATEGORIES}
+            categories={CATEGORIES.map(c => ({ ...c, label: t(`vibeCategory.${c.id}`) }))}
             activeIds={activeCategories}
             onToggle={toggleCategory}
             onSelectAll={() => setActiveCategories(ALL_CATEGORY_IDS)}

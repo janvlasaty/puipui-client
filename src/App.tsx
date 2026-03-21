@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import { useProfile } from './hooks/useProfile'
@@ -15,6 +16,7 @@ import { SheetProvider } from './components/ui/SheetPortal'
 import { OverlayProvider } from './contexts/OverlayContext'
 
 function AppInner() {
+  const { t } = useTranslation()
   const { showToast } = useToast()
 
   useEffect(() => {
@@ -25,9 +27,9 @@ function AppInner() {
 
     const handleControllerChange = () => {
       if (!hadController) return
-      showToast('New version available', {
+      showToast(t('common.newVersionAvailable'), {
         duration: 0,
-        action: { label: 'Reload', onClick: () => window.location.reload() },
+        action: { label: t('common.reload'), onClick: () => window.location.reload() },
       })
     }
 

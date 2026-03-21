@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 const BASE = import.meta.env.BASE_URL
 
 const gradients = {
@@ -54,6 +56,7 @@ interface LandingPageProps {
 }
 
 export const LandingPage = ({ onSignIn }: LandingPageProps) => {
+  const { t } = useTranslation()
   return (
     <div className="min-h-screen bg-white text-neutral-900 font-sans overflow-x-hidden">
 
@@ -70,19 +73,19 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
             </span>
           </div>
           <p className="text-base text-neutral-500 leading-relaxed max-w-xs">
-            Community based messaging and social app. Focused on building real friendship and sharing.
+            {t('landing.tagline')}
           </p>
         </div>
 
         <div className="shrink-0">
           <div className="bg-neutral-50 border border-neutral-200 rounded-2xl px-6 py-5 flex flex-col items-center gap-4 min-w-[220px]">
-            <p className="text-sm text-neutral-500 text-center">This app is invite only.</p>
+            <p className="text-sm text-neutral-500 text-center">{t('auth.inviteOnly')}</p>
             <button
               onClick={onSignIn}
               className="px-5 py-2.5 rounded-full text-sm font-semibold active:scale-95 transition-all w-full"
               style={{ background: '#DFAF07', color: '#fff' }}
             >
-              Sign in
+              {t('auth.signIn')}
             </button>
           </div>
         </div>
@@ -109,21 +112,21 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
 
         <div className="relative max-w-5xl mx-auto">
           <GradientTitle color="blue" className="text-4xl md:text-5xl text-center mb-12">
-            New era of online friendship
+            {t('landing.newEra')}
           </GradientTitle>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                title: '150 friends maximum',
-                body: 'Every one of your friends is your influencer as you call it. Strengthen your relations with the closest 150 of your friends.',
+                title: t('landing.maxFriendsTitle'),
+                body: t('landing.maxFriendsBody'),
               },
               {
-                title: 'Meaningful chat',
-                body: 'Differentiate spam chat from important discussion. Topics in chat will help you keep focus on meaningful things.',
+                title: t('landing.meaningfulChatTitle'),
+                body: t('landing.meaningfulChatBody'),
               },
               {
-                title: 'Share excitement',
-                body: 'Share early your best places, stories and vibes. Inspire and get inspired by those you know best.',
+                title: t('landing.shareExcitementTitle'),
+                body: t('landing.shareExcitementBody'),
               },
             ].map(({ title, body }) => (
               <div key={title} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white">
@@ -139,13 +142,13 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
       <section className="max-w-5xl mx-auto px-8 py-20 flex items-center gap-16">
         <div className="flex-1 space-y-6">
           <GradientTitle color="purple" className="text-4xl md:text-5xl leading-tight">
-            Build friendship<br />not fancy profile
+            {t('landing.buildFriendship').split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>)}
           </GradientTitle>
           {[
-            { lead: "Dunbar's number is 150.", body: 'That is maximum of your friends in PuiPui.' },
-            { lead: 'Focus on your closest friends.', body: 'Inspire and be inspired by the people you love.' },
-            { lead: 'Enjoy meaningful conversations.', body: 'Feel free to create private rooms or even threads with your 150 most important people.' },
-            { lead: "It's not about building a profile — it's about sharing.", body: 'Engage in discussions in rooms and threads, and share your experiences and excitement.' },
+            { lead: t('landing.dunbar'), body: t('landing.dunbarBody') },
+            { lead: t('landing.focusFriends'), body: t('landing.focusFriendsBody') },
+            { lead: t('landing.enjoyConversations'), body: t('landing.enjoyConversationsBody') },
+            { lead: t('landing.notAboutProfile'), body: t('landing.notAboutProfileBody') },
           ].map(({ lead, body }) => (
             <p key={lead} className="text-sm text-neutral-600 leading-relaxed">
               <span className="font-semibold text-neutral-900">{lead}</span>{' '}{body}
@@ -222,12 +225,12 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
 
           <div className="flex-1 space-y-7">
             <GradientTitle color="green" className="text-4xl md:text-5xl leading-tight">
-              Meaningful<br />conversation
+              {t('landing.meaningfulConversation').split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>)}
             </GradientTitle>
             {[
-              { title: 'Introducing Topics', body: 'Helps you distinguish between casual chatter and important discussion.' },
-              { title: 'Useful Notices', body: 'Keep key messages and pinned messages front and center in every chat topic.' },
-              { title: 'Enhance your chat with powerful tools', body: 'Create periodical polls, events and more...' },
+              { title: t('landing.introducingTopics'), body: t('landing.introducingTopicsBody') },
+              { title: t('landing.usefulNotices'), body: t('landing.usefulNoticesBody') },
+              { title: t('landing.enhanceChat'), body: t('landing.enhanceChatBody') },
             ].map(({ title, body }) => (
               <div key={title}>
                 <p className="font-semibold text-sm mb-1">{title}</p>
@@ -282,12 +285,12 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
 
         <div className="flex-1 space-y-7">
           <GradientTitle color="pink" className="text-4xl md:text-5xl leading-tight">
-            Sharing<br />interests
+            {t('landing.sharingInterests').split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>)}
           </GradientTitle>
           {[
-            { title: 'Bookmark your favourite places', body: "Save the places you've visited and share them with friends (or keep them private)." },
-            { title: 'Saw great movie? Read new book?', body: 'There is no public profiles for getting attention — just personal recommendations to share your excitement.' },
-            { title: '', body: 'Tip from a friend you know is often the best one.' },
+            { title: t('landing.bookmarkPlaces'), body: t('landing.bookmarkPlacesBody') },
+            { title: t('landing.sawGreatMovie'), body: t('landing.sawGreatMovieBody') },
+            { title: '', body: t('landing.tipFromFriend') },
           ].map(({ title, body }, i) => (
             <div key={i}>
               {title && <p className="font-semibold text-sm mb-1">{title}</p>}
@@ -301,15 +304,15 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
       <section className="py-20 px-8" style={{ background: '#FFFBEB' }}>
         <div className="max-w-5xl mx-auto flex items-start gap-16">
           <div className="flex-1">
-            <GradientTitle color="teal" className="text-4xl md:text-5xl mb-6">Why PuiPui?</GradientTitle>
+            <GradientTitle color="teal" className="text-4xl md:text-5xl mb-6">{t('landing.whyPuiPui')}</GradientTitle>
             <div className="space-y-4 text-sm text-neutral-600 leading-relaxed max-w-lg">
               <p>
-                <span className="font-semibold text-neutral-900">PuiPui relates to honeycomb in Samoa.</span>{' '}
-                It means strictly &ldquo;to protect, to guard&rdquo; in the Samoan language. Samoans are known for their strong communal values, and vibrant cultural traditions. Much like our vision...
+                <span className="font-semibold text-neutral-900">{t('landing.whyPuiPuiP1')}</span>{' '}
+                {t('landing.whyPuiPuiP1Body')}
               </p>
               <p>
-                <span className="font-semibold text-neutral-900">PuiPui helps you focus on your closest friends.</span>{' '}
-                Instead of building an ego-driven profile with hundreds of strangers and foreign influencers, we emphasize being present and fostering inspiration within your closest community.
+                <span className="font-semibold text-neutral-900">{t('landing.whyPuiPuiP2')}</span>{' '}
+                {t('landing.whyPuiPuiP2Body')}
               </p>
             </div>
           </div>
@@ -324,9 +327,11 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
       {/* ── Pricing ── */}
       <section className="py-24 px-8 text-center">
         <div className="max-w-lg mx-auto">
-          <GradientTitle color="amber" className="text-4xl md:text-5xl mb-4">Absolute privacy.<br />No ads.</GradientTitle>
+          <GradientTitle color="amber" className="text-4xl md:text-5xl mb-4">
+            {t('landing.absolutePrivacy').split('\n').map((line, i) => <span key={i}>{i > 0 && <br />}{line}</span>)}
+          </GradientTitle>
           <p className="text-neutral-500 text-sm leading-relaxed mb-10">
-            Nothing comes for free. We believe our users appreciate that.
+            {t('landing.pricingBody')}
           </p>
           <div className="text-6xl font-extrabold tracking-tight bg-clip-text text-transparent" style={{ backgroundImage: gradients.amber }}>
             3<span className="text-3xl font-normal ml-1 text-neutral-400">€ / mo</span>
@@ -342,7 +347,7 @@ export const LandingPage = ({ onSignIn }: LandingPageProps) => {
             <span className="font-semibold text-sm">PuiPui</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-neutral-400 flex-wrap justify-center">
-            {['Based in Prague', 'Careers', 'Support / Help', 'Privacy', 'Terms of Use'].map((item, i, arr) => (
+            {[t('landing.footerBasedIn'), t('landing.footerCareers'), t('landing.footerSupport'), t('landing.footerPrivacy'), t('landing.footerTerms')].map((item, i, arr) => (
               <span key={item} className="flex items-center gap-4">
                 <span className="hover:text-white transition-colors cursor-pointer">{item}</span>
                 {i < arr.length - 1 && <span className="text-neutral-700">·</span>}

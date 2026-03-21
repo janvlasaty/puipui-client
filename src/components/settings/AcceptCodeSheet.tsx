@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { XIcon } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SheetPortal } from '@/components/ui/SheetPortal'
@@ -13,6 +14,7 @@ type Props = {
 }
 
 export const AcceptCodeSheet = ({ open, onClose }: Props) => {
+  const { t } = useTranslation()
   const { showToast } = useToast()
 
   const [acceptDigits, setAcceptDigits] = useState(['', '', '', '', '', ''])
@@ -39,7 +41,7 @@ export const AcceptCodeSheet = ({ open, onClose }: Props) => {
       setAcceptError(error.message)
     } else {
       onClose()
-      showToast('Invitation accepted')
+      showToast(t('acceptSheet.invitationAccepted'))
     }
     setCheckingCode(false)
   }
@@ -81,7 +83,7 @@ export const AcceptCodeSheet = ({ open, onClose }: Props) => {
           >
             <div className="w-full max-w-2xl bg-background rounded-t-2xl shadow-xl p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Enter invite code</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('acceptSheet.enterInviteCode')}</h3>
                 <button onClick={onClose} className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground">
                   <XIcon size={16} />
                 </button>
@@ -114,7 +116,7 @@ export const AcceptCodeSheet = ({ open, onClose }: Props) => {
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       className="text-xs text-muted-foreground text-center"
                     >
-                      Checking…
+                      {t('acceptSheet.checking')}
                     </motion.p>
                   ) : acceptResult === 'not_found' ? (
                     <motion.p
@@ -122,7 +124,7 @@ export const AcceptCodeSheet = ({ open, onClose }: Props) => {
                       initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                       className="text-xs text-destructive text-center"
                     >
-                      {acceptError ?? 'Code not found or expired.'}
+                      {acceptError ?? t('acceptSheet.codeNotFound')}
                     </motion.p>
                   ) : (
                     <motion.p
@@ -130,7 +132,7 @@ export const AcceptCodeSheet = ({ open, onClose }: Props) => {
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                       className="text-xs text-muted-foreground text-center"
                     >
-                      Enter the 6-digit code your friend shared with you.
+                      {t('acceptSheet.enterHint')}
                     </motion.p>
                   )}
                 </AnimatePresence>

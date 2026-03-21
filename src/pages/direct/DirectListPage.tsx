@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { useDataCache } from '../../contexts/DataCacheContext'
 import { ConversationList, type Friend } from '../../components/chat/ConversationList'
@@ -7,12 +8,14 @@ import type { Tables } from '../../types/database'
 import { getRoomsWithProfiles } from '../../repositories/rooms.repository'
 import { getLastMessagesByRoomIds } from '../../repositories/messages.repository'
 import { decodeAvatar } from '../../lib/utils'
+import { formatMessagePreview } from '../../utils/messageParser'
 
 interface DirectListPageProps {
   onSelectFriend: (friend: Friend) => void
 }
 
 export const DirectListPage: React.FC<DirectListPageProps> = ({ onSelectFriend }) => {
+  const { t } = useTranslation()
   const { session } = useAuth()
   const { roomsCache, setRoomsCache, setRoomsLoading, isCacheStale } = useDataCache()
 
@@ -54,7 +57,7 @@ export const DirectListPage: React.FC<DirectListPageProps> = ({ onSelectFriend }
 
       // Convert rooms to Friend format for display
       const friendsList: Friend[] = (rooms || []).map((room) => {
-        let roomName = room.label || 'Chat Room'
+        let roomName = room.label || t('chat.chatRoom')
 
         // For direct rooms, get the other user's name
         if (room.is_direct && room.rooms_users) {
@@ -65,7 +68,7 @@ export const DirectListPage: React.FC<DirectListPageProps> = ({ onSelectFriend }
           if (otherUser?.profiles?.name) {
             roomName = otherUser.profiles.name
           } else {
-            roomName = 'Direct Message'
+            roomName = t('chat.directMessage')
           }
         }
 
@@ -73,8 +76,10 @@ export const DirectListPage: React.FC<DirectListPageProps> = ({ onSelectFriend }
           id: room.id,
           name: roomName,
           avatar: decodeAvatar((room.is_direct && room.rooms_users?.find(ru => ru.user_id !== session?.user?.id)?.profiles?.avatar) || null) || '',
-          lastMessage: messagesMap[room.id]?.content || 'No messages yet',
-          timestamp: messagesMap[room.id]?.created_at ? new Date(messagesMap[room.id].created_at).toLocaleDateString() : 'Just now',
+          lastMessage: messagesMap[room.id]
+            ? formatMessagePreview(messagesMap[room.id].content, messagesMap[room.id].type)
+            : t('chat.noMessagesPreview'),
+          timestamp: messagesMap[room.id]?.created_at ? new Date(messagesMap[room.id].created_at).toLocaleDateString() : t('chat.justNow'),
           unread: 0,
         }
       })

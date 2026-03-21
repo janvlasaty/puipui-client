@@ -1,4 +1,5 @@
 import { XIcon, NavigationArrowIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { BottomSheet } from '../BottomSheet'
 import { MAP_CATEGORIES } from './mapCategories'
 import { useOverlay } from '../../contexts/OverlayContext'
@@ -29,6 +30,7 @@ function getMapsUrl(lat: number, lng: number, label: string) {
 }
 
 export const PoiPopup = ({ poi, onClose }: { poi: Poi; onClose: () => void }) => {
+  const { t } = useTranslation()
   const { openPoiReview } = useOverlay()
   const cat = MAP_CATEGORIES.find((c) => c.id === poi.category)
   const tags = PLACEHOLDER_TAGS[poi.category] ?? []
@@ -51,7 +53,7 @@ export const PoiPopup = ({ poi, onClose }: { poi: Poi; onClose: () => void }) =>
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:underline"
                 >
                   <NavigationArrowIcon size={11} />
-                  Open in maps
+                  {t('map.openInMaps')}
                 </a>
               </div>
               <button
@@ -69,8 +71,8 @@ export const PoiPopup = ({ poi, onClose }: { poi: Poi; onClose: () => void }) =>
             </div>
 
             <div className="flex items-baseline gap-1 flex-wrap opacity-60">
-              <span className="text-xs font-semibold text-foreground shrink-0">Me:</span>
-              <span className="text-xs text-foreground shrink-0">What's the vibe here?</span>
+              <span className="text-xs font-semibold text-foreground shrink-0">{t('map.me')}</span>
+              <span className="text-xs text-foreground shrink-0">{t('map.whatsTheVibe')}</span>
               <span className="shrink-0 text-xs">✨</span>
               <span className="text-xs text-muted-foreground">{tags.join(' ')}</span>
             </div>
@@ -86,7 +88,7 @@ export const PoiPopup = ({ poi, onClose }: { poi: Poi; onClose: () => void }) =>
               }
               className="w-full mt-3 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity active:scale-[0.98]"
             >
-              Add Review
+              {t('map.addReview')}
             </button>
           </div>
         </div>

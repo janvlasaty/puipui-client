@@ -1,4 +1,5 @@
-import { UserIcon, DotsThreeOutlineIcon, MapPinIcon, ChartBarHorizontalIcon, ReceiptIcon, ChatCenteredTextIcon, GhostIcon,LinkIcon, EyeSlashIcon, PlusIcon } from '@phosphor-icons/react'
+import { UserIcon, DotsThreeOutlineIcon, MapPinIcon, ChartBarHorizontalIcon, CoinsIcon, ChatCenteredTextIcon, GhostIcon,LinkIcon, EyeSlashIcon, PlusIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { ChatBubble } from './ChatBubble'
 import { PageHeader } from '../PageHeader'
 import { CreatePollModal } from './CreatePollModal'
@@ -22,6 +23,7 @@ const slideTransition = { type: 'spring' as const, stiffness: 350, damping: 35, 
 interface Message {
   id: string
   text: string
+  type?: Enums<'type_message_type'>
   sender: 'user' | 'other'
   timestamp: string
   showTimestamp: boolean
@@ -73,6 +75,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
   onAddTopic,
   participants,
 }) => {
+  const { t } = useTranslation()
   const [inputMessage, setInputMessage] = React.useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeModal, setActiveModal] = useState<null | 'poll' | 'expense' | 'location'>(null)
@@ -341,13 +344,14 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
               {messages.length === 0 && (
                 <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground/40">
                   <GhostIcon size={48} weight="thin" />
-                  <span className="text-sm">No messages yet</span>
+                  <span className="text-sm">{t('chat.noMessagesYet')}</span>
                 </div>
               )}
               {messages.map((message) => (
                 <ChatBubble
                   key={message.id}
                   message={message.text}
+                  type={message.type}
                   sender={message.sender}
                   timestamp={message.timestamp}
                   showTimestamp={message.showTimestamp}
@@ -432,7 +436,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
                         setAddingTopic(false)
                         setNewTopicLabel('')
                       }}
-                      placeholder="Topic name…"
+                      placeholder={t('chat.topicPlaceholder')}
                       className="text-xs uppercase tracking-wide border-b border-primary bg-transparent focus:outline-none w-24"
                     />
                   )}
@@ -455,7 +459,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
           <div className="max-w-2xl mx-auto w-full px-4 pt-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
               <LinkIcon size={12} />
-              Link message
+              {t('chat.linkMessage')}
             </div>
           </div>
         )}
@@ -465,10 +469,10 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
             {menuOpen && (
               <div className="absolute bottom-full left-2 mb-2 w-48 bg-popover border border-border rounded-2xl shadow-lg overflow-hidden z-20">
                 {[
-                  ...(topics !== undefined ? [{ icon: <ChatCenteredTextIcon size={16} />, label: topicsBarHidden ? 'Show topics' : 'Hide topics', onClick: () => setTopicsBarHidden(h => !h) }] : []),
-                  { icon: <MapPinIcon size={16} />, label: 'Share location', onClick: () => setActiveModal('location') },
-                  { icon: <ChartBarHorizontalIcon size={16} />, label: 'Create poll', onClick: () => setActiveModal('poll') },
-                  { icon: <ReceiptIcon size={16} />, label: 'Add expense', onClick: () => setActiveModal('expense') },
+                  ...(topics !== undefined ? [{ icon: <ChatCenteredTextIcon size={16} />, label: topicsBarHidden ? t('chat.showTopics') : t('chat.hideTopics'), onClick: () => setTopicsBarHidden(h => !h) }] : []),
+                  { icon: <MapPinIcon size={16} />, label: t('chat.shareLocation'), onClick: () => setActiveModal('location') },
+                  { icon: <ChartBarHorizontalIcon size={16} />, label: t('chat.createPoll'), onClick: () => setActiveModal('poll') },
+                  { icon: <CoinsIcon size={16} />, label: t('chat.addExpense'), onClick: () => setActiveModal('expense') },
                 ].map(({ icon, label, onClick }, i, arr) => (
                   <button
                     key={label}
@@ -491,7 +495,7 @@ export const ChatConversation: React.FC<ChatConversationProps> = ({
             )}
             {!inputMessage && (
               <span className="absolute left-11 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none select-none leading-[22px] text-sm">
-                Type a message...
+                {t('chat.typeMessage')}
               </span>
             )}
             <div

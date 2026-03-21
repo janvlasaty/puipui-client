@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ChatConversation } from '../../components/chat/ChatConversation'
 import type { Enums } from '../../types/database'
 import { useAuth } from '../../hooks/useAuth'
@@ -14,11 +15,13 @@ type DbMessage = {
   user_id: string
   content: string
   created_at: string
+  type: Enums<'type_message_type'>
 }
 
 interface Message {
   id: string
   text: string
+  type: Enums<'type_message_type'>
   sender: 'user' | 'other'
   timestamp: string
   showTimestamp: boolean
@@ -58,6 +61,7 @@ function formatMessages(
     return {
       id: msg.id,
       text: msg.content,
+      type: msg.type,
       sender: isSender ? 'user' : 'other',
       timestamp: createdAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       showTimestamp,
@@ -78,6 +82,7 @@ interface DirectMessagePageProps {
 type Topic = { id: string; label: string }
 
 export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, onBack }) => {
+  const { t } = useTranslation()
   const { session } = useAuth()
   const [rawMessages, setRawMessages] = useState<DbMessage[]>([])
   const [hasMore, setHasMore] = useState(false)
@@ -101,7 +106,7 @@ export const DirectMessagePage: React.FC<DirectMessagePageProps> = ({ roomId, on
       const { data: roomUsers, error } = await getRoomUsersWithProfiles(roomId)
       if (error) return
       const otherUser = (roomUsers || []).find((ru) => ru.user_id !== session.user.id)
-      setFriendName(otherUser?.profiles?.name || 'Unknown')
+      setFriendName(otherUser?.profiles?.name || t('common.unknown'))
       setFriendAvatar(decodeAvatar(otherUser?.profiles?.avatar) || '')
     }
     loadFriendData()

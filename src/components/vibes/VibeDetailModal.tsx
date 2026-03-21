@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { PencilIcon, TrashIcon, CheckIcon } from '@phosphor-icons/react'
 import { ConfirmActionSheet } from '../ConfirmActionSheet'
@@ -8,6 +9,7 @@ import type { VibeEntry } from './types'
 import { EMOJI_OPTIONS } from '../../utils/emojiOptions'
 
 export const VibeDetailModal = ({ item, onClose }: { item: VibeEntry; onClose: () => void }) => {
+  const { t } = useTranslation()
   const [reviews, setReviews] = useState(() =>
     [...item.reviews].sort((a, b) => (a.user === 'Me' ? -1 : b.user === 'Me' ? 1 : 0))
   )
@@ -118,7 +120,7 @@ export const VibeDetailModal = ({ item, onClose }: { item: VibeEntry; onClose: (
 
       <ConfirmActionSheet
         open={confirmDeleteIdx !== null}
-        message="Remove your review?"
+        message={t('vibes.removeReview')}
         overlayZIndex={62}
         zIndex={63}
         onConfirm={() => deleteReview(confirmDeleteIdx!)}

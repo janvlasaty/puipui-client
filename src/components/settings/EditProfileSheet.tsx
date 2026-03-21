@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CheckIcon, UserIcon, XIcon } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SheetPortal } from '@/components/ui/SheetPortal'
@@ -37,6 +38,7 @@ type Props = {
 }
 
 export const EditProfileSheet = ({ open, onClose }: Props) => {
+  const { t } = useTranslation()
   const { session } = useAuth()
   const { profile, fetchProfile } = useProfile()
 
@@ -60,14 +62,14 @@ export const EditProfileSheet = ({ open, onClose }: Props) => {
 
   const handleAvatarFile = useCallback(async (file: File) => {
     if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      setError('Only JPG and PNG files are supported')
+      setError(t('editProfileSheet.jpgPngOnly'))
       return
     }
     try {
       const dataUrl = await resizeImage(file)
       setAvatarPreview(dataUrl)
     } catch {
-      setError('Failed to process image')
+      setError(t('editProfileSheet.failedProcess'))
     }
   }, [])
 
@@ -110,7 +112,7 @@ export const EditProfileSheet = ({ open, onClose }: Props) => {
           >
             <div className="w-full max-w-2xl bg-background rounded-t-2xl shadow-xl p-6">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Edit profile</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('editProfileSheet.title')}</h3>
                 <button onClick={onClose} className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground">
                   <XIcon size={16} />
                 </button>
@@ -147,20 +149,20 @@ export const EditProfileSheet = ({ open, onClose }: Props) => {
                       onClick={() => cameraInputRef.current?.click()}
                       className="px-3 py-1.5 text-xs rounded-full border border-border hover:bg-muted transition-colors"
                     >
-                      Take photo
+                      {t('editProfileSheet.takePhoto')}
                     </button>
                     <button
                       type="button"
                       onClick={() => galleryInputRef.current?.click()}
                       className="px-3 py-1.5 text-xs rounded-full border border-border hover:bg-muted transition-colors"
                     >
-                      Choose from library
+                      {t('editProfileSheet.chooseFromLibrary')}
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="name" className="text-sm font-medium">Name</label>
+                  <label htmlFor="name" className="text-sm font-medium">{t('editProfileSheet.name')}</label>
                   <input
                     id="name" type="text" value={name} autoFocus
                     onChange={(e) => { setName(e.target.value); setSaved(false) }}
@@ -169,7 +171,7 @@ export const EditProfileSheet = ({ open, onClose }: Props) => {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label htmlFor="surname" className="text-sm font-medium">Surname</label>
+                  <label htmlFor="surname" className="text-sm font-medium">{t('editProfileSheet.surname')}</label>
                   <input
                     id="surname" type="text" value={surname}
                     onChange={(e) => { setSurname(e.target.value); setSaved(false) }}
@@ -180,11 +182,11 @@ export const EditProfileSheet = ({ open, onClose }: Props) => {
                 {error && <p className="text-sm text-destructive">{error}</p>}
                 <div className="flex items-center gap-3 pt-1">
                   <Button type="submit" className="flex-1" disabled={saving || !isDirty || !name.trim() || !surname.trim()}>
-                    {saving ? 'Saving…' : 'Save changes'}
+                    {saving ? t('editProfileSheet.saving') : t('editProfileSheet.saveChanges')}
                   </Button>
                   {saved && !isDirty && (
                     <span className="flex items-center gap-1 text-sm text-green-600 shrink-0">
-                      <CheckIcon size={14} /> Saved
+                      <CheckIcon size={14} /> {t('editProfileSheet.saved')}
                     </span>
                   )}
                 </div>

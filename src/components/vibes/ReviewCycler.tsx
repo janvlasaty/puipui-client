@@ -1,13 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Review } from './types'
 
 export const ReviewCycler = ({ reviews }: { reviews: Review[] }) => {
   const [idx, setIdx] = useState(0)
+  const intervalRef = useRef(4000 + Math.random() * 3000)
 
   useEffect(() => {
     if (reviews.length <= 1) return
-    const timer = setInterval(() => setIdx((i) => (i + 1) % reviews.length), 3000)
+    const timer = setInterval(
+      () => setIdx((i) => (i + 1) % reviews.length),
+      intervalRef.current,
+    )
     return () => clearInterval(timer)
   }, [reviews.length])
 
@@ -22,7 +26,7 @@ export const ReviewCycler = ({ reviews }: { reviews: Review[] }) => {
           initial={{ y: '100%', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '-100%', opacity: 0 }}
-          transition={{ duration: 0.22, ease: 'easeInOut' }}
+          transition={{ duration: 0.5, ease: 'easeInOut' }}
         >
           <span className="font-semibold truncate">{r.user}:</span>
           <span className="truncate flex-1">{r.note}</span>

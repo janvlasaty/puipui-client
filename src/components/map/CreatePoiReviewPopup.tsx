@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MAP_CATEGORIES } from './mapCategories'
 import { ModalCard } from '../ui/ModalCard'
@@ -32,6 +33,7 @@ export const CreatePoiReviewPopup = ({
   onClose,
   onSubmit,
 }: CreatePoiReviewPopupProps) => {
+  const { t } = useTranslation()
   const [name, setName] = useState(existingPoiData?.name || '')
   const [category, setCategory] = useState<PoiCategory | null>(existingPoiData?.category || null)
   const [emoji, setEmoji] = useState<EmojiOption | null>(null)
@@ -75,21 +77,21 @@ export const CreatePoiReviewPopup = ({
         icon={categoryIcon
           ? <categoryIcon.Icon size={26} color={categoryIcon.color} weight="fill" className="shrink-0" />
           : undefined}
-        title={mode === 'existing' ? existingPoiData?.name ?? '' : 'New Place'}
-        subtitle={mode === 'existing' ? 'Add your review' : 'Create new place'}
+        title={mode === 'existing' ? existingPoiData?.name ?? '' : t('map.newPlace')}
+        subtitle={mode === 'existing' ? t('map.addYourReview') : t('map.createNewPlace')}
         onClose={onClose}
       >
         <div className="px-5 pt-4 pb-6 space-y-3">
           {mode === 'new' && (
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                Place name
+                {t('map.placeName')}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter place name..."
+                placeholder={t('map.placeNamePlaceholder')}
                 className="w-full text-sm bg-muted rounded-lg px-3 py-2 outline-none"
                 autoFocus
               />
@@ -99,7 +101,7 @@ export const CreatePoiReviewPopup = ({
           {mode === 'new' && (
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                Category
+                {t('map.category')}
               </label>
               <div className="grid grid-cols-3 gap-2">
                 {MAP_CATEGORIES.map((cat) => (
@@ -113,7 +115,7 @@ export const CreatePoiReviewPopup = ({
                     }`}
                   >
                     <cat.Icon size={20} color={cat.color} weight="fill" />
-                    <span className="text-xs">{cat.label}</span>
+                    <span className="text-xs">{t(`mapCategory.${cat.id}`)}</span>
                   </button>
                 ))}
               </div>
@@ -122,7 +124,7 @@ export const CreatePoiReviewPopup = ({
 
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-              Your vibe
+              {t('review.yourVibe')}
             </label>
             {emoji ? (
               <div className="flex items-center gap-2">
@@ -132,26 +134,26 @@ export const CreatePoiReviewPopup = ({
                 >
                   {emoji}
                 </button>
-                <span className="text-sm text-muted-foreground">Tap to change</span>
+                <span className="text-sm text-muted-foreground">{t('review.tapToChange')}</span>
               </div>
             ) : (
               <button
                 onClick={() => setShowEmojiPicker(true)}
                 className="w-full text-sm bg-muted rounded-lg px-3 py-3 hover:bg-muted/70 transition-colors text-muted-foreground"
               >
-                Choose an emoji...
+                {t('review.chooseEmoji')}
               </button>
             )}
           </div>
 
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-              Your review
+              {t('review.yourReview')}
             </label>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="What's the vibe here?..."
+              placeholder={t('review.whatsTheVibeHere')}
               className="w-full text-sm bg-muted rounded-lg px-3 py-2 outline-none resize-none"
               rows={3}
             />
@@ -166,7 +168,7 @@ export const CreatePoiReviewPopup = ({
                 : 'bg-muted text-muted-foreground cursor-not-allowed'
             }`}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Review'}
+            {isSubmitting ? t('map.submitting') : t('map.submitReview')}
           </button>
         </div>
       </ModalCard>

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AnimatePresence } from 'framer-motion'
 import { VibeDetailModal } from '../components/vibes/VibeDetailModal'
 import { CreatePoiReviewPopup } from '../components/map/CreatePoiReviewPopup'
@@ -55,6 +56,7 @@ export const useOverlay = () => {
 }
 
 export const OverlayProvider = ({ children }: { children: ReactNode }) => {
+  const { t } = useTranslation()
   const { session } = useAuth()
   const { showToast } = useToast()
 
@@ -85,7 +87,7 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     onSuccess?: () => void
   ) => {
     if (!session?.user?.id) {
-      showToast('You must be logged in to add a review')
+      showToast(t('toasts.mustBeLoggedInReview'))
       return
     }
     try {
@@ -105,12 +107,12 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
       )
       if (reviewError) throw new Error(reviewError.message)
 
-      showToast('Review added successfully! ✨')
+      showToast(t('toasts.reviewAdded'))
       closeModal()
       onSuccess?.()
     } catch (err) {
       console.error('Error submitting review:', err)
-      showToast('Failed to add review. Please try again.')
+      showToast(t('toasts.reviewFailed'))
     }
   }
 
@@ -122,18 +124,18 @@ export const OverlayProvider = ({ children }: { children: ReactNode }) => {
     note: string
   }) => {
     if (!session?.user?.id) {
-      showToast('You must be logged in to add a vibe')
+      showToast(t('toasts.mustBeLoggedInVibe'))
       return
     }
     try {
       // TODO: Connect to backend when vibe review API is ready
       // For now, just show success message
       console.log('Vibe review submitted:', data)
-      showToast('Vibe added successfully! ✨')
+      showToast(t('toasts.vibeAdded'))
       closeModal()
     } catch (err) {
       console.error('Error submitting vibe review:', err)
-      showToast('Failed to add vibe. Please try again.')
+      showToast(t('toasts.vibeFailed'))
     }
   }
 

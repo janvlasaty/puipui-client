@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { XIcon, CircleNotchIcon, BookOpenIcon, FilmStripIcon, ArrowLeftIcon } from '@phosphor-icons/react'
 import { CATEGORIES } from './vibeData'
@@ -25,6 +26,7 @@ export const CreateVibeReviewPopup = ({
   onClose,
   onSubmit,
 }: CreateVibeReviewPopupProps) => {
+  const { t } = useTranslation()
   const [step, setStep] = useState<Step>('category')
   const [category, setCategory] = useState<string | null>(null)
   const [title, setTitle] = useState('')
@@ -141,25 +143,25 @@ export const CreateVibeReviewPopup = ({
 
   const getMetaLabel = () => {
     switch (category) {
-      case 'books': return 'Author'
-      case 'movies': return 'Director'
-      case 'tv': return 'TV Origin'
-      case 'theatre': return 'Playwright/Venue'
-      case 'exhibitions': return 'Venue'
-      case 'games': return 'Developer'
-      default: return 'Meta'
+      case 'books': return t('vibeReview.metaAuthor')
+      case 'movies': return t('vibeReview.metaDirector')
+      case 'tv': return t('vibeReview.metaTvOrigin')
+      case 'theatre': return t('vibeReview.metaPlaywright')
+      case 'exhibitions': return t('vibeReview.metaVenue')
+      case 'games': return t('vibeReview.metaDeveloper')
+      default: return t('vibeReview.metaDefault')
     }
   }
 
   const getTitleLabel = () => {
     switch (category) {
-      case 'books': return 'Book title'
-      case 'movies': return 'Movie title'
-      case 'tv': return 'TV Show title'
-      case 'theatre': return 'Play title'
-      case 'exhibitions': return 'Exhibition name'
-      case 'games': return 'Game title'
-      default: return 'Title'
+      case 'books': return t('vibeReview.titleBook')
+      case 'movies': return t('vibeReview.titleMovie')
+      case 'tv': return t('vibeReview.titleTv')
+      case 'theatre': return t('vibeReview.titleTheatre')
+      case 'exhibitions': return t('vibeReview.titleExhibition')
+      case 'games': return t('vibeReview.titleGame')
+      default: return t('vibeReview.titleDefault')
     }
   }
 
@@ -167,7 +169,7 @@ export const CreateVibeReviewPopup = ({
     selectedCategory ? (
       <div className="flex items-center gap-1.5 bg-muted rounded-full px-2.5 py-1">
         <selectedCategory.Icon size={13} color={selectedCategory.color} weight="fill" />
-        <span className="text-xs font-medium">{selectedCategory.label}</span>
+        <span className="text-xs font-medium">{t(`vibeCategory.${selectedCategory.id}`)}</span>
       </div>
     ) : null
 
@@ -180,8 +182,8 @@ export const CreateVibeReviewPopup = ({
   return (
     <>
       <ModalCard
-        title="Share your vibe"
-        subtitle="Let your friends know your thoughts..."
+        title={t('vibeReview.shareYourVibe')}
+        subtitle={t('vibeReview.subtitle')}
         onClose={onClose}
       >
         <AnimatePresence mode="popLayout" initial={false}>
@@ -194,7 +196,7 @@ export const CreateVibeReviewPopup = ({
               transition={{ duration: 0.18 }}
               className="px-5 pt-4 pb-6"
             >
-              <p className="text-xs font-semibold text-muted-foreground mb-3">Choose a category</p>
+              <p className="text-xs font-semibold text-muted-foreground mb-3">{t('vibeReview.chooseCategory')}</p>
               <div className="grid grid-cols-3 gap-2">
                 {CATEGORIES.map((cat) => (
                   <button
@@ -203,7 +205,7 @@ export const CreateVibeReviewPopup = ({
                     className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-muted hover:bg-muted/70 border border-transparent transition-colors"
                   >
                     <cat.Icon size={24} color={cat.color} weight="fill" />
-                    <span className="text-xs font-medium">{cat.label}</span>
+                    <span className="text-xs font-medium">{t(`vibeCategory.${cat.id}`)}</span>
                   </button>
                 ))}
               </div>
@@ -227,7 +229,7 @@ export const CreateVibeReviewPopup = ({
               {category === 'books' && (
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                    Search for book
+                    {t('vibeReview.searchForBook')}
                   </label>
                   <div className="relative">
                     <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 bg-background focus-within:ring-1 focus-within:ring-ring">
@@ -240,7 +242,7 @@ export const CreateVibeReviewPopup = ({
                         type="text"
                         value={bookQuery}
                         onChange={(e) => setBookQuery(e.target.value)}
-                        placeholder="Search by title or author..."
+                        placeholder={t('vibeReview.searchByTitleOrAuthor')}
                         className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
                       />
                       {bookQuery && (
@@ -259,7 +261,7 @@ export const CreateVibeReviewPopup = ({
                             >
                               <p className="text-sm font-medium">{book.title}</p>
                               <p className="text-xs text-muted-foreground">
-                                {book.author_name?.[0] || 'Unknown author'}
+                                {book.author_name?.[0] || t('vibeReview.unknownAuthor')}
                                 {book.first_publish_year && ` • ${book.first_publish_year}`}
                               </p>
                             </button>
@@ -274,7 +276,7 @@ export const CreateVibeReviewPopup = ({
               {(category === 'movies' || category === 'tv') && (
                 <div>
                   <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                    {category === 'movies' ? 'Search for movie' : 'Search for TV show'}
+                    {category === 'movies' ? t('vibeReview.searchForMovie') : t('vibeReview.searchForTvShow')}
                   </label>
                   <div className="relative">
                     <div className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 bg-background focus-within:ring-1 focus-within:ring-ring">
@@ -287,7 +289,7 @@ export const CreateVibeReviewPopup = ({
                         type="text"
                         value={mediaQuery}
                         onChange={(e) => setMediaQuery(e.target.value)}
-                        placeholder={category === 'movies' ? 'Search by title...' : 'Search by show name...'}
+                        placeholder={category === 'movies' ? t('vibeReview.searchByTitle') : t('vibeReview.searchByShowName')}
                         className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
                       />
                       {mediaQuery && (
@@ -323,7 +325,7 @@ export const CreateVibeReviewPopup = ({
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder={`Enter ${getTitleLabel().toLowerCase()}...`}
+                  placeholder={t('vibeReview.enterPlaceholder', { label: getTitleLabel().toLowerCase() })}
                   className="w-full text-sm bg-muted rounded-lg px-3 py-2 outline-none"
                 />
               </div>
@@ -336,7 +338,7 @@ export const CreateVibeReviewPopup = ({
                   type="text"
                   value={meta}
                   onChange={(e) => setMeta(e.target.value)}
-                  placeholder={`Enter ${getMetaLabel().toLowerCase()}...`}
+                  placeholder={t('vibeReview.enterPlaceholder', { label: getMetaLabel().toLowerCase() })}
                   className="w-full text-sm bg-muted rounded-lg px-3 py-2 outline-none"
                 />
               </div>
@@ -350,7 +352,7 @@ export const CreateVibeReviewPopup = ({
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                 }`}
               >
-                Next
+                {t('vibeReview.next')}
               </button>
             </motion.div>
           )}
@@ -372,7 +374,7 @@ export const CreateVibeReviewPopup = ({
 
               <div>
                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                  Your vibe
+                  {t('review.yourVibe')}
                 </label>
                 {emoji ? (
                   <div className="flex items-center gap-2">
@@ -382,26 +384,26 @@ export const CreateVibeReviewPopup = ({
                     >
                       {emoji}
                     </button>
-                    <span className="text-sm text-muted-foreground">Tap to change</span>
+                    <span className="text-sm text-muted-foreground">{t('review.tapToChange')}</span>
                   </div>
                 ) : (
                   <button
                     onClick={() => setShowEmojiPicker(true)}
                     className="w-full text-sm bg-muted rounded-lg px-3 py-3 hover:bg-muted/70 transition-colors text-muted-foreground"
                   >
-                    Choose an emoji...
+                    {t('review.chooseEmoji')}
                   </button>
                 )}
               </div>
 
               <div>
                 <label className="text-xs font-semibold text-muted-foreground mb-1 block">
-                  Your review
+                  {t('review.yourReview')}
                 </label>
                 <textarea
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="What's your take?..."
+                  placeholder={t('review.whatsYourTake')}
                   className="w-full text-sm bg-muted rounded-lg px-3 py-2 outline-none resize-none"
                   rows={4}
                 />
@@ -416,7 +418,7 @@ export const CreateVibeReviewPopup = ({
                     : 'bg-muted text-muted-foreground cursor-not-allowed'
                 }`}
               >
-                {isSubmitting ? 'Adding vibe...' : 'Add Vibe'}
+                {isSubmitting ? t('vibeReview.addingVibe') : t('vibeReview.addVibe')}
               </button>
             </motion.div>
           )}

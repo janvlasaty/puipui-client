@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SheetPortal } from '@/components/ui/SheetPortal'
 import { XIcon, MapPinIcon } from '@phosphor-icons/react'
@@ -28,13 +29,14 @@ export const CreatePoiSheet = ({
   onCancel,
   onSuccess,
 }: CreatePoiSheetProps) => {
+  const { t } = useTranslation()
   const { openPoiReview } = useOverlay()
   const { showToast } = useToast()
 
   const handleSelectExisting = (poi: MapboxFeature) => {
     const category = mapMapboxCategoryToPoiCategory(poi.properties.poi_category_ids ?? poi.properties.poi_category)
     if (!category) {
-      showToast('Unable to determine venue category')
+      showToast(t('map.unableDetermineCategory'))
       return
     }
     openPoiReview({
@@ -70,7 +72,7 @@ export const CreatePoiSheet = ({
             <div className="w-full max-w-2xl bg-background rounded-t-2xl shadow-xl">
               <div className="flex items-center justify-between px-6 pt-6 pb-4">
                 <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                  Venues nearby
+                  {t('map.venuesNearby')}
                   {isLoading && <span className="inline-block w-2.5 h-2.5 border-[1.5px] border-current border-t-transparent rounded-full animate-spin" />}
                 </h3>
                 <button onClick={onCancel} className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground">
@@ -89,7 +91,7 @@ export const CreatePoiSheet = ({
                   ))
                 ) : nearbyPois.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-xs text-muted-foreground">No existing venues nearby</p>
+                    <p className="text-xs text-muted-foreground">{t('map.noVenuesNearby')}</p>
                   </div>
                 ) : (
                   nearbyPois.map((poi) => {
@@ -106,7 +108,7 @@ export const CreatePoiSheet = ({
                           onClick={() => handleSelectExisting(poi)}
                           className="shrink-0 text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground transition-colors"
                         >
-                          Select
+                          {t('map.select')}
                         </button>
                       </div>
                     )
@@ -117,7 +119,7 @@ export const CreatePoiSheet = ({
               <div className="px-6 py-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
                 <Button onClick={handleCreateNew} className="w-full bg-primary text-white flex items-center gap-2">
                   <MapPinIcon size={18} weight="fill" />
-                  Create new venue here
+                  {t('map.createNewVenue')}
                 </Button>
               </div>
             </div>

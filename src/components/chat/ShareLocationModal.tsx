@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { MapPinIcon, ArrowsClockwiseIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { ModalCard } from '../ui/ModalCard'
 
 interface ShareLocationModalProps {
@@ -10,6 +11,7 @@ interface ShareLocationModalProps {
 type Status = 'loading' | 'ready' | 'error'
 
 export const ShareLocationModal = ({ onClose, onSend }: ShareLocationModalProps) => {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<Status>('loading')
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
@@ -25,8 +27,8 @@ export const ShareLocationModal = ({ onClose, onSend }: ShareLocationModalProps)
       (err) => {
         setErrorMsg(
           err.code === 1
-            ? 'Location permission denied.'
-            : 'Could not get your location.'
+            ? t('location.permissionDenied')
+            : t('location.couldNotGet')
         )
         setStatus('error')
       },
@@ -45,14 +47,14 @@ export const ShareLocationModal = ({ onClose, onSend }: ShareLocationModalProps)
   return (
     <ModalCard
       icon={<MapPinIcon size={18} className="text-primary" />}
-      title="Share location"
+      title={t('location.shareLocation')}
       onClose={onClose}
     >
       <div className="p-5 pt-4 space-y-4">
         {status === 'loading' && (
           <div className="flex flex-col items-center gap-3 py-6 text-muted-foreground">
             <span className="w-6 h-6 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
-            <span className="text-sm">Getting your location…</span>
+            <span className="text-sm">{t('location.gettingLocation')}</span>
           </div>
         )}
 
@@ -65,7 +67,7 @@ export const ShareLocationModal = ({ onClose, onSend }: ShareLocationModalProps)
               className="flex items-center gap-1.5 text-sm text-primary font-medium"
             >
               <ArrowsClockwiseIcon size={14} />
-              Try again
+              {t('location.tryAgain')}
             </button>
           </div>
         )}
@@ -98,7 +100,7 @@ export const ShareLocationModal = ({ onClose, onSend }: ShareLocationModalProps)
               onClick={handleSend}
               className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-medium transition-opacity"
             >
-              Send location
+              {t('location.sendLocation')}
             </button>
           </>
         )}

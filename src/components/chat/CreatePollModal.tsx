@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChartBarHorizontalIcon, PlusIcon, XIcon } from '@phosphor-icons/react'
+import { useTranslation } from 'react-i18next'
 import { ModalCard } from '../ui/ModalCard'
 
 interface CreatePollModalProps {
@@ -9,6 +10,7 @@ interface CreatePollModalProps {
 }
 
 export const CreatePollModal = ({ onClose, onSend }: CreatePollModalProps) => {
+  const { t } = useTranslation()
   const [question, setQuestion] = useState('')
   const [options, setOptions] = useState(['', ''])
   const [multiSelect, setMultiSelect] = useState(false)
@@ -34,26 +36,26 @@ export const CreatePollModal = ({ onClose, onSend }: CreatePollModalProps) => {
   return (
     <ModalCard
       icon={<ChartBarHorizontalIcon size={18} className="text-primary" />}
-      title="Create poll"
+      title={t('poll.createPoll')}
       onClose={onClose}
     >
       <div className="p-5 pt-4 space-y-4">
         <div>
           <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">
-            Question
+            {t('poll.question')}
           </label>
           <input
             autoFocus
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask something..."
+            placeholder={t('poll.questionPlaceholder')}
             className="w-full px-3 py-2 rounded-xl bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
         <div>
           <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">
-            Answers
+            {t('poll.answers')}
           </label>
           <div className="space-y-2">
             <AnimatePresence initial={false}>
@@ -69,7 +71,7 @@ export const CreatePollModal = ({ onClose, onSend }: CreatePollModalProps) => {
                   <input
                     value={opt}
                     onChange={(e) => updateOption(i, e.target.value)}
-                    placeholder={`Option ${i + 1}`}
+                    placeholder={t('poll.optionPlaceholder', { n: i + 1 })}
                     className="flex-1 px-3 py-2 rounded-xl bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                   {options.length > 2 && (
@@ -90,22 +92,22 @@ export const CreatePollModal = ({ onClose, onSend }: CreatePollModalProps) => {
               className="mt-2 flex items-center gap-1.5 text-xs text-primary font-medium"
             >
               <PlusIcon size={13} />
-              Add option
+              {t('poll.addOption')}
             </button>
           )}
         </div>
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium">Multiple answers</p>
-            <p className="text-xs text-muted-foreground">Allow selecting more than one</p>
+            <p className="text-sm font-medium">{t('poll.multipleAnswers')}</p>
+            <p className="text-xs text-muted-foreground">{t('poll.allowMultiple')}</p>
           </div>
           <button
             onClick={() => setMultiSelect((v) => !v)}
             className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${multiSelect ? 'bg-primary' : 'bg-muted'}`}
           >
             <span
-              className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${multiSelect ? 'translate-x-5' : 'translate-x-1'}`}
+              className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${multiSelect ? 'translate-x-4' : 'translate-x-0'}`}
             />
           </button>
         </div>
@@ -115,7 +117,7 @@ export const CreatePollModal = ({ onClose, onSend }: CreatePollModalProps) => {
           onClick={handleSend}
           className="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-medium disabled:opacity-40 transition-opacity"
         >
-          Send poll
+          {t('poll.sendPoll')}
         </button>
       </div>
     </ModalCard>

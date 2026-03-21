@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CheckIcon, XIcon, CopySimpleIcon, TrashSimpleIcon } from '@phosphor-icons/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SheetPortal } from '@/components/ui/SheetPortal'
@@ -15,6 +16,7 @@ type Props = {
 }
 
 export const InviteCodeSheet = ({ open, onClose }: Props) => {
+  const { t } = useTranslation()
   const { session } = useAuth()
 
   const [activeInvitation, setActiveInvitation] = useState<{ code: string; expire_at: string } | null | undefined>(undefined)
@@ -65,7 +67,7 @@ export const InviteCodeSheet = ({ open, onClose }: Props) => {
     if (inv) {
       setActiveInvitation(inv)
     } else {
-      setGenerateError('Could not generate a code. Please try again.')
+      setGenerateError(t('inviteSheet.couldNotGenerate'))
     }
     setGeneratingCode(false)
   }
@@ -101,7 +103,7 @@ export const InviteCodeSheet = ({ open, onClose }: Props) => {
             >
               <div className="w-full max-w-2xl bg-background rounded-t-2xl shadow-xl p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Your invite code</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{t('inviteSheet.yourInviteCode')}</h3>
                   <button onClick={onClose} className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground">
                     <XIcon size={16} />
                   </button>
@@ -163,20 +165,20 @@ export const InviteCodeSheet = ({ open, onClose }: Props) => {
                           className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                         >
                           {copied
-                            ? <><CheckIcon size={14} className="text-green-600" /><span className="text-green-600">Copied</span></>
-                            : <><CopySimpleIcon size={14} /><span>Copy</span></>
+                            ? <><CheckIcon size={14} className="text-green-600" /><span className="text-green-600">{t('inviteSheet.copied')}</span></>
+                            : <><CopySimpleIcon size={14} /><span>{t('inviteSheet.copy')}</span></>
                           }
                         </button>
                         <p className={`text-xs font-mono text-center tabular-nums ${
                           countdown.startsWith('0:') ? 'text-destructive' : 'text-muted-foreground'
                         }`}>
-                          Expires in {countdown}
+                          {t('inviteSheet.expiresIn', { time: countdown })}
                         </p>
                         <button
                           onClick={() => setConfirmDelete(true)}
                           className="flex items-center gap-1.5 text-sm text-destructive hover:opacity-70 transition-opacity"
                         >
-                          <TrashSimpleIcon size={14} /><span>Delete</span>
+                          <TrashSimpleIcon size={14} /><span>{t('inviteSheet.deleteCode')}</span>
                         </button>
                       </>
                     )}
@@ -184,7 +186,7 @@ export const InviteCodeSheet = ({ open, onClose }: Props) => {
                       <>
                         {generateError && <p className="text-sm text-destructive text-center">{generateError}</p>}
                         <Button onClick={handleGenerateCode} disabled={generatingCode}>
-                          Create invitation code
+                          {t('inviteSheet.createInvitationCode')}
                         </Button>
                       </>
                     )}
@@ -198,7 +200,7 @@ export const InviteCodeSheet = ({ open, onClose }: Props) => {
 
       <ConfirmActionSheet
         open={confirmDelete}
-        message="Delete your invite code?"
+        message={t('inviteSheet.deleteInviteCode')}
         onConfirm={handleDeleteCode}
         onCancel={() => setConfirmDelete(false)}
       />

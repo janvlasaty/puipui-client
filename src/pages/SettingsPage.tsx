@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useNavigate, useNavigationType } from 'react-router-dom'
 import {
   UserIcon, ArrowClockwiseIcon, SunIcon, MoonIcon, MonitorIcon,
-  PencilSimpleIcon, UserPlusIcon, CaretRightIcon,
+  PencilSimpleIcon, UserPlusIcon, CaretRightIcon, TranslateIcon,
 } from '@phosphor-icons/react'
 import { PageHeader } from '../components/PageHeader'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useProfile } from '../hooks/useProfile'
 import { useTheme } from '../contexts/ThemeContext'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../lib/supabase'
 import { decodeAvatar } from '../lib/utils'
 import { EditProfileSheet } from '../components/settings/EditProfileSheet'
@@ -22,6 +23,7 @@ export const SettingsPage = () => {
   const navType = useNavigationType()
   const { profile } = useProfile()
   const { theme, setTheme } = useTheme()
+  const { t, i18n } = useTranslation()
 
   const [isExiting, setIsExiting] = useState(false)
   const [showEditPopup, setShowEditPopup] = useState(false)
@@ -54,21 +56,21 @@ export const SettingsPage = () => {
           <section>
             <div className="flex items-center gap-2 mb-4">
               <UserPlusIcon size={14} className="text-muted-foreground" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Make friend</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('settings.makeFriend')}</h2>
             </div>
             <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
               <button
                 onClick={() => setShowInvitePopup(true)}
                 className="w-full flex items-center justify-between px-4 py-3.5 text-sm hover:bg-muted transition-colors text-left"
               >
-                <span>Share your invite code</span>
+                <span>{t('settings.shareInviteCode')}</span>
                 <CaretRightIcon size={14} className="text-muted-foreground shrink-0" />
               </button>
               <button
                 onClick={() => setShowAcceptPopup(true)}
                 className="w-full flex items-center justify-between px-4 py-3.5 text-sm hover:bg-muted transition-colors text-left"
               >
-                <span>Enter a friend's code</span>
+                <span>{t('settings.enterFriendCode')}</span>
                 <CaretRightIcon size={14} className="text-muted-foreground shrink-0" />
               </button>
             </div>
@@ -78,7 +80,7 @@ export const SettingsPage = () => {
           <section className="border-t border-border pt-6">
             <div className="flex items-center gap-2 mb-4">
               <UserIcon size={14} className="text-muted-foreground" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Profile</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('settings.profile')}</h2>
             </div>
             <div className="flex items-center gap-3 py-2">
               {decodeAvatar(profile?.avatar ?? null) ? (
@@ -105,13 +107,13 @@ export const SettingsPage = () => {
           <section className="border-t border-border pt-6">
             <div className="flex items-center gap-2 mb-4">
               <SunIcon size={14} className="text-muted-foreground" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Appearance</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('settings.appearance')}</h2>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {([
-                { value: 'light', label: 'Light', icon: SunIcon },
-                { value: 'dark',  label: 'Dark',  icon: MoonIcon },
-                { value: 'system', label: 'System', icon: MonitorIcon },
+                { value: 'light', label: t('settings.light'), icon: SunIcon },
+                { value: 'dark',  label: t('settings.dark'),  icon: MoonIcon },
+                { value: 'system', label: t('settings.system'), icon: MonitorIcon },
               ] as { value: ReturnType<typeof useTheme>['theme'], label: string, icon: React.ElementType }[]).map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
@@ -129,14 +131,40 @@ export const SettingsPage = () => {
             </div>
           </section>
 
+          {/* Language */}
+          <section className="border-t border-border pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <TranslateIcon size={14} className="text-muted-foreground" />
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t('settings.language')}</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {([
+                { value: 'en', label: 'English' },
+                { value: 'cs', label: 'Čeština' },
+              ]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => i18n.changeLanguage(value)}
+                  className={`flex items-center justify-center gap-2 py-3 rounded-lg border text-sm transition-colors ${
+                    i18n.language === value
+                      ? 'border-primary bg-primary/10 text-primary font-medium'
+                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* Actions */}
           <section className="border-t border-border pt-6 space-y-3">
             <Button onClick={() => window.location.reload()} variant="outline" className="w-full">
               <ArrowClockwiseIcon size={14} />
-              Reload app
+              {t('settings.reloadApp')}
             </Button>
             <Button onClick={handleSignOut} variant="destructive" className="w-full">
-              Sign out
+              {t('settings.signOut')}
             </Button>
           </section>
 

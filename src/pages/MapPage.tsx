@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import mapboxgl from 'mapbox-gl'
 import type { Map as MapboxMap, LngLatLike } from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
@@ -31,6 +32,7 @@ function computeIsDark(theme: string) {
 }
 
 export const MapPage = () => {
+  const { t } = useTranslation()
   const { poisCache, setPoisCache, setPoisLoading, isCacheStale } = useDataCache()
   const { showToast } = useToast()
   const { theme } = useTheme()
@@ -139,7 +141,7 @@ export const MapPage = () => {
       } else {
         setPoisCache(data || [])
         if (data?.length === POIS_REQUEST_LIMIT) {
-          showToast('Zoom in to see more places... 🫢')
+          showToast(t('map.zoomIn'))
         }
       }
     })
@@ -382,7 +384,7 @@ export const MapPage = () => {
       <AnimatePresence>
         {showFilter && (
           <CategoryFilterPopup
-            categories={MAP_CATEGORIES}
+            categories={MAP_CATEGORIES.map(c => ({ ...c, label: t(`mapCategory.${c.id}`) }))}
             activeIds={activeCategories}
             onToggle={toggleCategory}
             onSelectAll={() => setActiveCategories(ALL_CATEGORY_IDS)}

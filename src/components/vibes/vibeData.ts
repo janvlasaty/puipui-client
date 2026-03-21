@@ -1,4 +1,4 @@
-import { BookOpenIcon, FilmSlateIcon, TelevisionIcon, MaskHappyIcon, ColumnsIcon, GameControllerIcon } from '@phosphor-icons/react'
+import { BookOpenIcon, FilmSlateIcon, TelevisionIcon, MaskHappyIcon, PaletteIcon, GameControllerIcon } from '@phosphor-icons/react'
 import type { VibeEntry } from './types'
 
 export const CATEGORY_COLOR = new Map<React.ElementType, string>([
@@ -6,7 +6,7 @@ export const CATEGORY_COLOR = new Map<React.ElementType, string>([
   [FilmSlateIcon,      '#8B5CF6'],
   [TelevisionIcon,     '#3B82F6'],
   [MaskHappyIcon,      '#EF4444'],
-  [ColumnsIcon,        '#10B981'],
+  [PaletteIcon,        '#10B981'],
   [GameControllerIcon, '#F97316'],
 ])
 
@@ -15,7 +15,7 @@ export const CATEGORIES = [
   { id: 'movies',      label: 'Movies',      Icon: FilmSlateIcon,      color: '#8B5CF6' },
   { id: 'tv',          label: 'TV Shows',    Icon: TelevisionIcon,     color: '#3B82F6' },
   { id: 'theatre',     label: 'Theatre',     Icon: MaskHappyIcon,      color: '#EF4444' },
-  { id: 'exhibitions', label: 'Exhibitions', Icon: ColumnsIcon,        color: '#10B981' },
+  { id: 'exhibitions', label: 'Exhibitions', Icon: PaletteIcon,        color: '#10B981' },
   { id: 'games',       label: 'Games',       Icon: GameControllerIcon, color: '#F97316' },
 ]
 
@@ -41,7 +41,7 @@ export const RECENT_VIBES: VibeEntry[] = [
     { emoji: '🥲', user: 'Tomáš R.', note: 'Laughed and cried at the same time. Minimal staging, devastating.' },
     { emoji: '🤯', user: 'Eva M.', note: 'Did not expect to feel this much about nothing happening.' },
   ]},
-  { id: 5, Icon: ColumnsIcon, title: 'Miró at NGP', meta: 'National Gallery Prague', reviews: [
+  { id: 5, Icon: PaletteIcon, title: 'Miró at NGP', meta: 'National Gallery Prague', reviews: [
     { emoji: '✨', user: 'Adéla N.', note: 'So playful and free. I want to paint like a child again.' },
     { emoji: '😊', user: 'Klara B.', note: 'The colours are just joyful. Needed this.' },
     { emoji: '🤩', user: 'Martin K.', note: 'Incredible retrospective. Worth the queue.' },

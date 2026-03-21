@@ -1,4 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { BottomSheet } from './BottomSheet'
 
 interface ConfirmActionSheetProps {
@@ -19,7 +20,9 @@ export const ConfirmActionSheet: React.FC<ConfirmActionSheetProps> = ({
   zIndex,
   onConfirm,
   onCancel,
-}) => (
+}) => {
+  const { t } = useTranslation()
+  return (
   <AnimatePresence>
     {open && (
       <BottomSheet overlay onClose={onCancel} overlayZIndex={overlayZIndex} zIndex={zIndex}>
@@ -39,10 +42,11 @@ export const ConfirmActionSheet: React.FC<ConfirmActionSheetProps> = ({
             onClick={onCancel}
             className="w-full bg-card rounded-2xl py-3.5 text-sm font-semibold hover:bg-muted transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         </div>
       </BottomSheet>
     )}
   </AnimatePresence>
-)
+  )
+}

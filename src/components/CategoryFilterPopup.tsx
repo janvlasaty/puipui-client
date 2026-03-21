@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import type { ElementType } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export type FilterCategory = { id: string; label: string; Icon: ElementType; color: string }
 
@@ -17,7 +18,9 @@ export const CategoryFilterPopup = ({
   onSelectAll: () => void
   onClose: () => void
   anchorRect?: DOMRect
-}) => (
+}) => {
+  const { t } = useTranslation()
+  return (
   <>
     <div className="fixed inset-0 z-[15]" onClick={onClose} />
     <motion.div
@@ -29,9 +32,9 @@ export const CategoryFilterPopup = ({
       transition={{ type: 'spring', stiffness: 420, damping: 30 }}
     >
       <div className="px-3 pt-3 pb-2 flex items-center justify-between">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Categories</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('filter.categories')}</p>
         {categories.some((c) => !activeIds.includes(c.id)) && (
-          <button onClick={onSelectAll} className="text-xs font-semibold text-primary uppercase tracking-wider">All</button>
+          <button onClick={onSelectAll} className="text-xs font-semibold text-primary uppercase tracking-wider">{t('filter.all')}</button>
         )}
       </div>
       <div className="pb-2">
@@ -54,4 +57,5 @@ export const CategoryFilterPopup = ({
       </div>
     </motion.div>
   </>
-)
+  )
+}
