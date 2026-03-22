@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
           skipWaiting: true,
           navigateFallback: 'index.html',
           navigateFallbackDenylist: [/^\/api\//],
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         },
         manifest: {
           name: 'PuiPui',
@@ -53,6 +54,16 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || env.VITE_SUPABASE_URL),
       'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY),
       'import.meta.env.VITE_COMMIT_HASH': JSON.stringify(commitHash),
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/mapbox-gl')) return 'mapbox'
+            if (id.includes('node_modules/framer-motion')) return 'framer'
+          },
+        },
+      },
     },
     server: {
       port: 5173,
